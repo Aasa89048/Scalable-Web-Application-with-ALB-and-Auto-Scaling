@@ -1,6 +1,6 @@
 # How I Built the AWS Web Application
 
-This file walks through the main steps I followed for the project, using the screenshots in the \`Screenshots/\` folder as a record of the setup. The screenshots show what was on screen when I captured them, so I still recommend checking the live AWS console before assuming a resource is running or a setting is unchanged.
+This file walks through the main steps I followed for the project, using the screenshots in the `Screenshots/` folder as a record of the setup. The screenshots show what was on screen when I captured them, so I still recommend checking the live AWS console before assuming a resource is running or a setting is unchanged.
 
 ## Part 1: Setting up the network
 
