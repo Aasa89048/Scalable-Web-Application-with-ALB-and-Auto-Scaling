@@ -128,6 +128,8 @@ I created a private S3 bucket for static content and kept its objects from being
 
 ![Private S3 bucket](Screenshots/private-s3.png)
 
+next is cloudfront dist (10 mins) and route 53 (20 mins) both (45 mins)
+
 ### 20. Configure Origin Access Control (OAC) for CloudFront
 
 I configured Origin Access Control for the CloudFront S3 origin so CloudFront could access bucket objects without making the bucket public.
