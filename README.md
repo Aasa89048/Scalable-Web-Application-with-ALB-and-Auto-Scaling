@@ -79,20 +79,20 @@ flowchart LR
 
 ## Implementation status
 
-| Component | Evidence in repository | Current status |
-|---|---|---|
-| VPC and subnet layout | [VPC screenshot](Screenshots/Productionvpc.png), NAT and route screenshots | The VPC setup.  |
-| NAT gateways | [Two NAT gateways screenshot](Screenshots/two-natgtws-one-in-each-az.png) | The two NAT gateways, one in each AZ.  |
-| Private-subnet routing | [Private route table screenshot](Screenshots/route-to-natgtw-from-php-app-private-subnet.png) | The route to a NAT gateway. |
-| Security groups | [Security groups screenshot](Screenshots/Security-groups.png) | The security groups ,  |
-| PHP app / Apache | [Working app screenshot](Screenshots/LTami-instance-working.png) and [phpMyAdmin screenshot](Screenshots/php-app-lb-working.png) | The application page and phpMyAdmin login page responding |
-| AMI and Launch Template | [AMI](Screenshots/php-app-ami.png), [Launch Template](Screenshots/php-app-LT.png), [instance setup](Screenshots/config-LTami-instance.png) | The AMI, Launch Template, and setup steps are documented. |
-| Systems Manager | [SSM role screenshot](Screenshots/php-app-LT-ssm-connection-role.png) | The role setup |
-| Auto Scaling | [ASG screenshot](Screenshots/ASG.png) | The Auto Scaling group . |
-| Load balancing | [ALB screenshot](Screenshots/ALB.png), [application through the load balancer](Screenshots/php-app-lb-working%282%29.png) | The ALB and an application response are documented. I haven’t included a test proving requests are spread across multiple targets |
-| Database | [RDS subnet group](Screenshots/db-subnet-group.png), [RDS instance](Screenshots/php-mysql-db.png) | The RDS MySQL instance and subnet group |
-| AWS WAF | [WAF screenshot](Screenshots/waf-ALB.png) | The web ACL|
-| CloudWatch and SNS | [Alarms](Screenshots/cloudwatch-alarms.png), [topics](Screenshots/sns-topics.png) | The alarms and SNS topics |
-| CloudFront and s3 | No screenshot evidence found | These are part of the planned design, but I haven’t documented their setup in this repository yet. |
-| IRoute 53 and ALB | No IaC files found | The repository currently contains screenshots and documentation, not Terraform or another infrastructure-as-code setup. |
+| Component | Evidence in repository |
+|---|---|
+| VPC and subnet layout | [VPC screenshot](Screenshots/Productionvpc.png), NAT and route screenshots |
+| NAT gateways | [Two NAT gateways screenshot](Screenshots/two-natgtws-one-in-each-az.png) |
+| Private-subnet routing | [Private route table screenshot](Screenshots/route-to-natgtw-from-php-app-private-subnet.png) |
+| Security groups | [Security groups screenshot](Screenshots/Security-groups.png) |
+| PHP app / Apache | [Working app screenshot](Screenshots/LTami-instance-working.png) and [phpMyAdmin screenshot](Screenshots/php-app-lb-working.png) |
+| AMI and Launch Template | [AMI](Screenshots/php-app-ami.png), [Launch Template](Screenshots/php-app-LT.png), [instance setup](Screenshots/config-LTami-instance.png) |
+| Systems Manager | [SSM role screenshot](Screenshots/php-app-LT-ssm-connection-role.png) |
+| Auto Scaling | [ASG screenshot](Screenshots/ASG.png) |
+| Load balancing | [ALB screenshot](Screenshots/ALB.png), [application through the load balancer](Screenshots/php-app-lb-working%282%29.png) |
+| Database | [RDS subnet group](Screenshots/db-subnet-group.png), [RDS instance](Screenshots/php-mysql-db.png) |
+| AWS WAF | [WAF screenshot](Screenshots/waf-ALB.png) |
+| CloudWatch and SNS | [Alarms](Screenshots/cloudwatch-alarms.png), [topics](Screenshots/sns-topics.png) |
+| CloudFront and s3 | No screenshot evidence found |
+| IRoute 53 and ALB | No IaC files found |
 
