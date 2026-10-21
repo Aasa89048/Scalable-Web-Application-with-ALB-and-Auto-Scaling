@@ -1,20 +1,20 @@
 # Operations and troubleshooting
 
-These are target operational procedures, not verified procedures for a running deployment.
+This guide pairs current screenshot evidence with checks to perform against the live AWS environment. Screenshots may be stale; always check current resource state.
 
 ## Monitoring and notifications
 
-Planned alarms should cover ALB unhealthy hosts and elevated 5xx responses, EC2/ASG capacity and CPU, RDS availability/storage/connections, and application health. Route actionable alarms to an SNS topic with a confirmed subscription. Define thresholds, evaluation periods, notification owners, and a test procedure when implementing them.
+CloudWatch alarms and SNS topics are visible in the repository screenshots. Verify each alarm's metric, threshold, period, evaluation count, current state, and action. Confirm subscriptions and test delivery before claiming alerts work end-to-end.
 
-## Triage guide
+## Triage
 
-| Symptom | Check |
+| Symptom | Checks |
 |---|---|
-| Site unreachable | DNS resolution, CloudFront origin/behavior, WAF blocks, ALB listener and security group |
-| Targets unhealthy | Target group health-check path/port, app service status, instance security group, application logs |
-| Slow or failed scaling | ASG activity history, launch template, instance health, scaling policy metric and cooldown |
-| App cannot reach database | DB endpoint/port, DB subnet group, app/DB security group references, credential source |
-| No alarm notification | Alarm state/history, SNS topic policy, subscription confirmation, delivery status |
-| Cannot administer instance | Systems Manager managed-node status, instance role, agent, and network access to SSM |
+| Application not reachable | DNS (if configured), WAF association/blocks, ALB listener, security groups, target health |
+| Targets unhealthy | Health-check path/port, Apache/PHP service status, instance logs, ALB-to-app rule |
+| Auto Scaling not replacing/scaling | ASG activity history, Launch Template version, health checks, desired/min/max, scaling policies |
+| Application cannot connect to RDS | RDS status/endpoint, DB subnet group, app and DB security-group rules, credential source |
+| No alarm notification | Alarm history/action, SNS topic policy, subscription confirmation and delivery status |
+| Session Manager unavailable | Instance profile, managed-node status, SSM agent, network egress or VPC endpoints |
 
-Use Session Manager for access when configured; avoid opening SSH to the internet. Redact secrets and personal data from logs and screenshots.
+Use Systems Manager for administration if the instance is configured as a managed node. Avoid public SSH where possible. Redact tokens, passwords, connection strings, and personal data from logs and screenshots.
