@@ -2,7 +2,7 @@
 
 A hands-on AWS project that builds and demonstrates a PHP web application behind an Application Load Balancer, with EC2 Auto Scaling, a VPC split into public/private subnets, a database, and operational/security services.
 
-> **Status based on repository evidence:** screenshots document AWS resources and a working application/phpMyAdmin view: VPC networking, two NAT gateways, private subnet routing, security groups, a PHP AMI/Launch Template, an Auto Scaling group, an ALB, RDS, WAF, CloudWatch alarms, and SNS topics. One EC2 instance screenshot shows a public IPv4 address; it is not clear whether that instance is a temporary setup host or an application node. Confirm the ASG subnet placement before describing compute as private. Screenshots do not prove resources still exist or every configuration is production-ready. See [implementation status](#implementation-status).
+> **Status based on repository evidence:** screenshots document AWS resources and a working application/phpMyAdmin view: VPC networking, two NAT gateways, private subnet routing, security groups, a PHP AMI/Launch Template, an Auto Scaling group, an ALB, RDS, WAF, CloudWatch alarms, and SNS topics. One EC2 instance screenshot shows a public IPv4 address; it is not clear whether that instance is a temporary setup host or an application node. Confirm the ASG subnet placement before describing compute as private. Screenshots do not prove resources still exist or every configuration is production-ready. See [What’s working so far](#whats-working-so-far).
 
 ## What this project demonstrates
 
@@ -77,51 +77,22 @@ flowchart LR
 5. Private instances use NAT for outbound access where configured. NAT gateways are shown in both AZs; exact route associations should be confirmed in the live account.
 6. AWS WAF, CloudWatch alarm actions, and SNS notification delivery should be reviewed in the AWS console before claiming the full behavior is validated.
 
-## Implementation status
+## What’s working so far
 
-| Component | Evidence in repository | Status / limits |
-|---|---|---|
-| VPC and subnet layout | [VPC screenshot](Screenshots/Productionvpc.png), NAT and route screenshots | Resources are visible; exact CIDRs and routes need live verification. One instance screenshot shows a public IPv4 address, so app-tier placement must be confirmed |
-| NAT gateways | [Two NAT gateways screenshot](Screenshots/two-natgtws-one-in-each-az.png) | Two gateways are visible; current state and route usage can change |
-| Private-subnet routing | [Private route table screenshot](Screenshots/route-to-natgtw-from-php-app-private-subnet.png) | Route to NAT is shown; full route table details should be checked live |
-| Security groups | [Security groups screenshot](Screenshots/Security-groups.png) | Groups exist; rules are too small in the screenshot to certify least privilege |
-| PHP app / Apache | [Working app screenshot](Screenshots/LTami-instance-working.png) and [phpMyAdmin screenshot](Screenshots/php-app-lb-working.png) | A web page and phpMyAdmin login page are shown working at capture time |
-| AMI and Launch Template | [AMI](Screenshots/php-app-ami.png), [Launch Template](Screenshots/php-app-LT.png), [user data setup](Screenshots/config-LTami-instance.png) | Screenshots show these resources and setup; repeatability and current versions are unverified |
-| Systems Manager | [SSM role screenshot](Screenshots/php-app-LT-ssm-connection-role.png) | Role/access configuration is shown; a successful Session Manager session is not independently proven by this image |
-| Auto Scaling | [ASG screenshot](Screenshots/ASG.png) | Group is shown; scaling policy behavior and instance replacement tests are not documented |
-| Load balancing | [ALB screenshot](Screenshots/ALB.png), [application via load balancer](Screenshots/php-app-lb-working%282%29.png) | ALB and application response are shown; target health and multi-instance distribution require live checks |
-| Database | [RDS subnet group](Screenshots/db-subnet-group.png), [RDS instance](Screenshots/php-mysql-db.png) | Database and subnet group are shown; Multi-AZ failover, backup, encryption, and public-access settings are unverified |
-| AWS WAF | [WAF screenshot](Screenshots/waf-ALB.png) | Web ACL is shown; association, rule coverage, and blocking tests should be checked live |
-| CloudWatch and SNS | [Alarms](Screenshots/cloudwatch-alarms.png), [topics](Screenshots/sns-topics.png) | Alarms and topics exist in screenshots; alarm actions and confirmed delivery are not demonstrated |
-| CloudFront and Route 53 | No screenshot evidence found | Planned / not yet documented as implemented |
-| Infrastructure as code | No IaC files found | Not currently reproducible from this repository |
+I’ve documented the main resources with screenshots so it’s easier to see what I set up and what still needs a proper test.
 
-For the end-to-end walkthrough, go to [Step-by-step documentation](Steps_documentation.md). Supporting notes: [architecture](docs/architecture.md), [deployment](docs/deployment.md), [operations](docs/operations.md), and [security](docs/security.md).
+- **VPC and subnets:** [VPC layout](Screenshots/Productionvpc.png), [NAT gateways](Screenshots/two-natgtws-one-in-each-az.png), and [private route](Screenshots/route-to-natgtw-from-php-app-private-subnet.png) show the network setup. I still need to double-check the exact routes and confirm the application instances are in private subnets; one instance screenshot shows a public IPv4 address.
+- **Security groups:** [View screenshot](Screenshots/Security-groups.png). The groups are there, but the actual rules need a closer look in the AWS console.
+- **PHP app and AMI:** The [application page](Screenshots/LTami-instance-working.png), [AMI](Screenshots/php-app-ami.png), and [Launch Template](Screenshots/php-app-LT.png) are documented here.
+- **Systems Manager:** [Role setup](Screenshots/php-app-LT-ssm-connection-role.png) is shown. I still need to confirm Session Manager access works end to end.
+- **Auto Scaling and ALB:** The [Auto Scaling group](Screenshots/ASG.png), [load balancer](Screenshots/ALB.png), and [application through the ALB](Screenshots/php-app-lb-working%282%29.png) are included. I haven’t included a test here that proves scale-out or traffic distribution across multiple instances.
+- **RDS:** The [DB subnet group](Screenshots/db-subnet-group.png) and [MySQL instance](Screenshots/php-mysql-db.png) are documented. Multi-AZ failover and settings such as backups, encryption, and public accessibility still need to be checked.
+- **WAF:** [View screenshot](Screenshots/waf-ALB.png). The web ACL is visible, but its association, rule coverage, and blocking behavior need testing.
+- **CloudWatch and SNS:** [Alarms](Screenshots/cloudwatch-alarms.png) and [SNS topics](Screenshots/sns-topics.png) are shown. Notification delivery still needs an end-to-end test.
+- **CloudFront and Route 53:** These are part of the planned design, but I haven’t added evidence showing them configured yet.
+- **Infrastructure as code:** This repository currently documents the work with screenshots; it doesn’t include Terraform or another IaC setup.
 
-## Repository structure
-
-```text
-.
-├── README.md
-├── Steps_documentation.md     # Screenshot-led project walkthrough
-├── Screenshots/               # AWS console and application evidence
-└── docs/
-    ├── architecture.md
-    ├── architecture.mmd       # Mermaid source for the architecture diagram
-    ├── deployment.md
-    ├── operations.md
-    └── security.md
-```
-
-## Security notes
-
-The screenshot set is not enough to certify production security. Before presenting this as production-ready, verify the actual security-group rules, database public-access and encryption settings, IAM policy scope, TLS configuration, WAF association/rules, secret handling, logging, and backup recovery. Do not add credentials or unredacted AWS account identifiers to screenshots or documentation. The historical phpMyAdmin setup notes should not be used as a production installation procedure.
-
-## Deployment, validation, and cleanup
-
-This repository records console-based implementation evidence but does not include infrastructure-as-code or a complete repeatable deployment script. Follow [docs/deployment.md](docs/deployment.md) for an implementation-aware checklist and cleanup order. Validate live health checks, scaling, database connectivity, WAF behavior, and SNS delivery before describing those behaviors as tested.
-
-NAT gateways, EC2, ALB, RDS, WAF, CloudWatch, and data transfer can incur charges. Use a learning account and budget alert. Remove unused resources and review snapshots, logs, and elastic IPs after cleanup.
+For the step-by-step walkthrough, see [Steps documentation](Steps_documentation.md).
 
 ## License
 
