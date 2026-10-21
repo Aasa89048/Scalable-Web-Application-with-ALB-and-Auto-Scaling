@@ -2,7 +2,7 @@
 
 ## Evidence-based overview
 
-Repository screenshots document a VPC with public/private networking, two NAT gateways, private-subnet routing, security groups, a PHP application AMI and Launch Template, an Auto Scaling group, an ALB, an RDS MySQL database and subnet group, a WAF web ACL, CloudWatch alarms, SNS topics, and application/phpMyAdmin responses.
+Repository screenshots document a VPC with public/private networking, two NAT gateways, private-subnet routing, security groups, a PHP application AMI and Launch Template, an Auto Scaling group, an ALB, an RDS MySQL database and subnet group, a WAF web ACL, CloudWatch alarms, SNS topics, and application/phpMyAdmin responses. One EC2 instance summary shows a public IPv4 address; its relationship to the Auto Scaling group is unclear, so the app tier's subnet placement is unverified.
 
 The screenshots are point-in-time records. They do not prove current resource state or all settings. In particular, screenshots do not establish CloudFront or Route 53, RDS Multi-AZ failover, scaling policy behavior, confirmed SNS delivery, complete WAF rule coverage, or security-group least privilege.
 
