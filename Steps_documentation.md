@@ -4,9 +4,9 @@ This document summarizes how I built the AWS web application. The screenshots in
 
 ## Part 1: Setting up the network
 
-### 1. Reviewed the VPC layout
+### 1. Set up the VPC
 
-I reviewed the VPC, subnets, and route tables to establish the network foundation for the application.
+I set up the VPC, subnets, and route tables as the network foundation for the application.
 
 ![VPC layout](Screenshots/Productionvpc.png)
 
@@ -16,51 +16,51 @@ I set up two NAT gateways, one in each Availability Zone, to provide outbound in
 
 ![NAT gateways in two Availability Zones](Screenshots/two-natgtws-one-in-each-az.png)
 
-### 3. Checked the private subnet route
+### 3. Set up the private subnet route
 
-I reviewed the PHP application subnet's route table and its route to the NAT gateway.
+I configured the PHP application subnet's route table to route outbound traffic through the NAT gateway.
 
 ![Private subnet route to NAT](Screenshots/route-to-natgtw-from-php-app-private-subnet.png)
 
-### 4. Reviewed the security groups
+### 4. Set up the security groups
 
-I created and reviewed security groups to control traffic between the application, load balancer, and database tiers.
+I created security groups to control traffic between the application, load balancer, and database tiers.
 
 ![Project security groups](Screenshots/Security-groups.png)
 
 ## Part 2: Preparing the application instances
 
-### 5. Created the application AMI
+### 5. Create the application AMI
 
 I created a custom AMI as the base image for the PHP application instances.
 
 ![PHP application AMI](Screenshots/php-app-ami.png)
 
-### 6. Checked the EC2 instance
+### 6. Set up the EC2 instance
 
-I reviewed the EC2 instance I used during application setup, including its network access, security groups, and IAM role.
+I set up the EC2 instance for application preparation, including its network access, security groups, and IAM role.
 
 ![Application EC2 instance](Screenshots/LT-ami-instance.png)
 
-### 7. Installed and configured the web server
+### 7. Install and configure the web server
 
-I configured the application instance with Apache and PHP for the web application.
+I installed and configured Apache and PHP on the application instance to run the web application.
 
 ![Web server and application setup](Screenshots/config-LTami-instance.png)
 
-### 8. Reviewed the Launch Template settings
+### 8. Configure the Launch Template settings
 
-I reviewed the Launch Template version and its AMI, instance type, network settings, security groups, IAM profile, storage, and metadata options.
+I configured the Launch Template settings, including the AMI, instance type, network settings, security groups, IAM profile, storage, and metadata options.
 
 ![Launch Template details](Screenshots/LTami-instance-working.png)
 
-### 9. Created the Launch Template
+### 9. Create the Launch Template
 
 I created a Launch Template to store the instance configuration used by the Auto Scaling group.
 
 ![PHP application Launch Template](Screenshots/php-app-LT.png)
 
-### 10. Configured Systems Manager access
+### 10. Set up Systems Manager access
 
 I configured the role and access setup for AWS Systems Manager so I could manage the application instance through Session Manager.
 
@@ -70,13 +70,13 @@ I configured the role and access setup for AWS Systems Manager so I could manage
 
 ### 11. Set up the Auto Scaling group
 
-I configured the Auto Scaling group to launch and manage application instances using the Launch Template, across the selected Availability Zones.
+I created and configured the Auto Scaling group to launch and manage application instances using the Launch Template across the selected Availability Zones.
 
 ![Auto Scaling group](Screenshots/ASG.png)
 
 ### 12. Set up the Application Load Balancer
 
-I configured the Application Load Balancer as the entry point for application traffic and reviewed its listeners, target group, health checks, subnets, and security group.
+I configured the Application Load Balancer as the entry point for application traffic, including its listeners, target group, health checks, subnets, and security group.
 
 ![Application Load Balancer](Screenshots/ALB.png)
 
@@ -90,11 +90,11 @@ I configured the RDS DB subnet group with subnets in two Availability Zones.
 
 ### 14. Set up the MySQL database
 
-I set up the RDS MySQL database and reviewed its accessibility, availability settings, backups, encryption, maintenance settings, and security group.
+I created the RDS MySQL database and configured its accessibility, availability settings, backups, encryption, maintenance settings, and security group.
 
 ![RDS MySQL database](Screenshots/php-mysql-db.png)
 
-### 15. Tested the application through the ALB
+### 15. Test the application through the ALB
 
 After setting up the database, I tested the application through the load-balancer endpoint.
 
@@ -104,31 +104,31 @@ After setting up the database, I tested the application through the load-balance
 
 ### 16. Set up AWS WAF
 
-I configured an AWS WAF web ACL for the project and reviewed its association with the ALB and its rules.
+I created and configured an AWS WAF web ACL for the project and associated it with the ALB.
 
 ![AWS WAF web ACL](Screenshots/waf-ALB.png)
 
-### 17. Configured CloudWatch alarms
+### 17. Set up CloudWatch alarms
 
-I created CloudWatch alarms to monitor the application and reviewed their metrics, thresholds, evaluation periods, and actions.
+I created CloudWatch alarms to monitor the application and configured their metrics, thresholds, evaluation periods, and actions.
 
 ![CloudWatch alarms](Screenshots/cloudwatch-alarms.png)
 
 ### 18. Set up SNS topics
 
-I configured SNS topics for project notifications and reviewed their connection to CloudWatch alarm actions and email subscriptions.
+I created SNS topics for project notifications and configured their connection to CloudWatch alarm actions and email subscriptions.
 
 ![SNS topics](Screenshots/sns-topics.png)
 
 ## Part 6: Keeping the S3 bucket private and connecting CloudFront
 
-### 19. Created the private S3 bucket
+### 19. Create the private S3 bucket
 
-I created a private S3 bucket for static content rather than making its objects publicly accessible.
+I created a private S3 bucket for static content and kept its objects from being publicly accessible.
 
 ![Private S3 bucket](Screenshots/private-s3.png)
 
-### 20. Configured Origin Access Control (OAC) for CloudFront
+### 20. Configure Origin Access Control (OAC) for CloudFront
 
 I configured Origin Access Control for the CloudFront S3 origin so CloudFront could access bucket objects without making the bucket public.
 
