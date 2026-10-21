@@ -93,11 +93,6 @@ flowchart LR
 | Database | [RDS subnet group](Screenshots/db-subnet-group.png), [RDS instance](Screenshots/php-mysql-db.png) | The RDS MySQL instance and subnet group |
 | AWS WAF | [WAF screenshot](Screenshots/waf-ALB.png) | The web ACL|
 | CloudWatch and SNS | [Alarms](Screenshots/cloudwatch-alarms.png), [topics](Screenshots/sns-topics.png) | The alarms and SNS topics |
-| CloudFront and Route 53 | No screenshot evidence found | These are part of the planned design, but I haven’t documented their setup in this repository yet. |
-| Infrastructure as code | No IaC files found | The repository currently contains screenshots and documentation, not Terraform or another infrastructure-as-code setup. |
+| CloudFront and s3 | No screenshot evidence found | These are part of the planned design, but I haven’t documented their setup in this repository yet. |
+| IRoute 53 and ALB | No IaC files found | The repository currently contains screenshots and documentation, not Terraform or another infrastructure-as-code setup. |
 
-For the step-by-step walkthrough, see [Steps documentation](Steps_documentation.md).
-
-## License
-
-No license file is currently present. Reuse and redistribution permissions are not specified.
