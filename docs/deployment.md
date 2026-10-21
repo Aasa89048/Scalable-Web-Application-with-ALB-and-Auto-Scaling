@@ -1,36 +1,46 @@
-# Deployment
+# Deployment and validation
 
-**Current state:** there is no reproducible deployment automation in this repository. The commands in the original README are manual host setup notes, not a complete deployment procedure. Do not treat this page as a deployable runbook until infrastructure code and tested commands are added.
+The repository contains screenshots of AWS console configuration and a working application view. It does not contain infrastructure-as-code or a complete repeatable deployment script, so deployment must currently be reproduced from AWS configuration and the [step-by-step screenshot guide](../Steps_documentation.md).
 
-## Planned deployment sequence
+## Reconstruct the environment
 
-1. Choose an IaC tool and document versions and AWS prerequisites.
-2. Create the VPC, two-AZ subnet layout, routing, NAT egress, and security groups.
-3. Create IAM instance roles, Systems Manager access, Launch Template, and Auto Scaling group.
-4. Create the ALB, target group, HTTPS listener/certificate, health checks, and scaling policies.
-5. Create private Multi-AZ RDS; store connection details in a secrets service rather than source code.
-6. Add Route 53, CloudFront, WAF, CloudWatch alarms/dashboard, and SNS subscriptions.
-7. Deploy the application and validate each item in the README checklist.
-8. Record actual outputs, screenshots or sanitized evidence, and rollback steps.
+Use the screenshot guide as a reference, not as a substitute for live validation:
 
-## Prerequisites to document
+1. Review VPC, subnet, route table, NAT gateway, and security group configuration.
+2. Prepare the PHP/Apache host image and Launch Template.
+3. Configure the instance role and verify Systems Manager managed-node access.
+4. Attach an Auto Scaling group to the intended subnets and ALB target group.
+5. Configure ALB listeners, target group health checks, and application security groups.
+6. Provision/configure RDS and its subnet group; keep credentials outside source control.
+7. Associate WAF with the intended resource and configure reviewed rules.
+8. Create CloudWatch alarms and SNS actions, then confirm end-to-end notification.
+9. Add CloudFront and Route 53 only if they are part of the desired deployed design; these are not shown in the current screenshot set.
 
-- AWS account/region and required permissions
-- IaC/runtime versions
-- DNS domain ownership and TLS certificate location
-- Secure database credential provisioning
-- Budget alert and resource naming/tagging convention
+Record the AWS region, resource names, chosen versions, and sanitized settings. Never publish credentials, account-specific secrets, or private keys.
 
-Never commit credentials, private keys, account IDs, or unredacted connection strings.
+## Validation checklist
+
+- Confirm private application instances have no unintended public ingress.
+- Check NAT gateways and route-table associations in both AZs.
+- Confirm target group health and application response through the ALB.
+- Exercise Auto Scaling safely and record the scaling policy and result.
+- Confirm app-to-RDS connectivity, DB public-access setting, encryption, backups, and Multi-AZ configuration.
+- Confirm a Session Manager session works without opening public SSH.
+- Review WAF association/rules and perform a safe test request.
+- Trigger or simulate an alarm and confirm SNS message delivery.
+
+Do not report any item as tested until the result has been observed and recorded.
 
 ## Cleanup
 
-When deployment automation is added, provide a reviewed destroy command and use it to remove resources in dependency order. Until then, clean up manually and verify the state in the AWS console/CLI:
+Delete resources in dependency order and confirm removal in the AWS console:
 
-- Remove test instances and Auto Scaling groups, then Launch Templates if unused.
-- Remove ALB/listeners/target groups and CloudFront/WAF resources after detaching associations.
-- Remove RDS only after deciding whether snapshots must be retained; snapshots may continue to incur charges.
-- Remove NAT gateways, elastic IPs, VPC endpoints, and other billable network resources.
-- Remove DNS records only when no longer needed; verify logs, snapshots, and storage separately.
+1. Remove test traffic and scale down/delete the Auto Scaling group.
+2. Delete ALB listeners, target groups, and the ALB.
+3. Delete WAF associations/ACLs when no longer needed.
+4. Delete RDS only after deciding whether to keep a final snapshot; retained backups and snapshots can still cost money.
+5. Delete NAT gateways and release unused Elastic IPs.
+6. Remove unused Launch Templates, AMIs/snapshots, alarms, SNS topics, logs, and security groups.
+7. Review the account for any remaining billable resources.
 
-Check the account for remaining billable resources after cleanup.
+NAT gateways, EC2, ALB, RDS, WAF, storage, logs, and data transfer may incur charges. Use a budget alert and keep learning environments only while needed.
