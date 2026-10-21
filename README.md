@@ -2,7 +2,7 @@
 
 A hands-on AWS project that builds and demonstrates a PHP web application behind an Application Load Balancer, with EC2 Auto Scaling, a VPC split into public/private subnets, a database, and operational/security services.
 
-> **Status based on repository evidence:** screenshots document AWS resources and a working application/phpMyAdmin view: VPC networking, two NAT gateways, private subnet routing, security groups, a PHP AMI/Launch Template, an Auto Scaling group, an ALB, RDS, WAF, CloudWatch alarms, and SNS topics. One EC2 instance screenshot shows a public IPv4 address; it is not clear whether that instance is a temporary setup host or an application node. Confirm the ASG subnet placement before describing compute as private. Screenshots do not prove resources still exist or every configuration is production-ready. See [What’s working so far](#whats-working-so-far).
+> **Status based on repository evidence:** screenshots document AWS resources and a working application/phpMyAdmin view: VPC networking, two NAT gateways, private subnet routing, security groups, a PHP AMI/Launch Template, an Auto Scaling group, an ALB, RDS, WAF, CloudWatch alarms, and SNS topics. One EC2 instance screenshot shows a public IPv4 address; it is not clear whether that instance is a temporary setup host or an application node. Confirm the ASG subnet placement before describing compute as private. Screenshots do not prove resources still exist or every configuration is production-ready. See [Implementation status](#implementation-status).
 
 ## What this project demonstrates
 
@@ -77,20 +77,24 @@ flowchart LR
 5. Private instances use NAT for outbound access where configured. NAT gateways are shown in both AZs; exact route associations should be confirmed in the live account.
 6. AWS WAF, CloudWatch alarm actions, and SNS notification delivery should be reviewed in the AWS console before claiming the full behavior is validated.
 
-## What’s working so far
+## Implementation status
 
-I’ve documented the main resources with screenshots so it’s easier to see what I set up and what still needs a proper test.
-
-- **VPC and subnets:** [VPC layout](Screenshots/Productionvpc.png), [NAT gateways](Screenshots/two-natgtws-one-in-each-az.png), and [private route](Screenshots/route-to-natgtw-from-php-app-private-subnet.png) show the network setup. I still need to double-check the exact routes and confirm the application instances are in private subnets; one instance screenshot shows a public IPv4 address.
-- **Security groups:** [View screenshot](Screenshots/Security-groups.png). The groups are there, but the actual rules need a closer look in the AWS console.
-- **PHP app and AMI:** The [application page](Screenshots/LTami-instance-working.png), [AMI](Screenshots/php-app-ami.png), and [Launch Template](Screenshots/php-app-LT.png) are documented here.
-- **Systems Manager:** [Role setup](Screenshots/php-app-LT-ssm-connection-role.png) is shown. I still need to confirm Session Manager access works end to end.
-- **Auto Scaling and ALB:** The [Auto Scaling group](Screenshots/ASG.png), [load balancer](Screenshots/ALB.png), and [application through the ALB](Screenshots/php-app-lb-working%282%29.png) are included. I haven’t included a test here that proves scale-out or traffic distribution across multiple instances.
-- **RDS:** The [DB subnet group](Screenshots/db-subnet-group.png) and [MySQL instance](Screenshots/php-mysql-db.png) are documented. Multi-AZ failover and settings such as backups, encryption, and public accessibility still need to be checked.
-- **WAF:** [View screenshot](Screenshots/waf-ALB.png). The web ACL is visible, but its association, rule coverage, and blocking behavior need testing.
-- **CloudWatch and SNS:** [Alarms](Screenshots/cloudwatch-alarms.png) and [SNS topics](Screenshots/sns-topics.png) are shown. Notification delivery still needs an end-to-end test.
-- **CloudFront and Route 53:** These are part of the planned design, but I haven’t added evidence showing them configured yet.
-- **Infrastructure as code:** This repository currently documents the work with screenshots; it doesn’t include Terraform or another IaC setup.
+| Component | Evidence in repository | Current status |
+|---|---|---|
+| VPC and subnet layout | [VPC screenshot](Screenshots/Productionvpc.png), NAT and route screenshots | The VPC setup is shown. I still need to confirm the exact CIDRs and routes in AWS. One instance screenshot has a public IPv4 address, so I also need to check where the application instances are running. |
+| NAT gateways | [Two NAT gateways screenshot](Screenshots/two-natgtws-one-in-each-az.png) | The screenshots show two NAT gateways, one in each AZ. Their current state and the routes using them should be checked in the console. |
+| Private-subnet routing | [Private route table screenshot](Screenshots/route-to-natgtw-from-php-app-private-subnet.png) | The screenshot shows a route to a NAT gateway. I’d check the full route table in AWS to make sure the other routes are correct too. |
+| Security groups | [Security groups screenshot](Screenshots/Security-groups.png) | The security groups are shown, but the screenshot isn’t clear enough to check every rule. I still need to review the allowed ports and sources. |
+| PHP app / Apache | [Working app screenshot](Screenshots/LTami-instance-working.png) and [phpMyAdmin screenshot](Screenshots/php-app-lb-working.png) | The screenshots show the application page and phpMyAdmin login page responding when they were captured. |
+| AMI and Launch Template | [AMI](Screenshots/php-app-ami.png), [Launch Template](Screenshots/php-app-LT.png), [instance setup](Screenshots/config-LTami-instance.png) | The AMI, Launch Template, and setup steps are documented. I haven’t shown that the setup can be repeated from scratch yet. |
+| Systems Manager | [SSM role screenshot](Screenshots/php-app-LT-ssm-connection-role.png) | The role setup is shown. I still need to confirm that I can connect to the instance using Session Manager. |
+| Auto Scaling | [ASG screenshot](Screenshots/ASG.png) | The Auto Scaling group is shown, but there’s no test here showing it launch extra instances or replace an unhealthy one. |
+| Load balancing | [ALB screenshot](Screenshots/ALB.png), [application through the load balancer](Screenshots/php-app-lb-working%282%29.png) | The ALB and an application response are documented. I haven’t included a test proving requests are spread across multiple targets. |
+| Database | [RDS subnet group](Screenshots/db-subnet-group.png), [RDS instance](Screenshots/php-mysql-db.png) | The RDS MySQL instance and subnet group are shown. Multi-AZ failover, backups, encryption, and public-access settings still need to be checked. |
+| AWS WAF | [WAF screenshot](Screenshots/waf-ALB.png) | The web ACL is shown. I still need to confirm its ALB association and test the rules to see how they handle requests. |
+| CloudWatch and SNS | [Alarms](Screenshots/cloudwatch-alarms.png), [topics](Screenshots/sns-topics.png) | The alarms and SNS topics are shown. I haven’t included a test confirming that an alarm triggers a notification and the message is delivered. |
+| CloudFront and Route 53 | No screenshot evidence found | These are part of the planned design, but I haven’t documented their setup in this repository yet. |
+| Infrastructure as code | No IaC files found | The repository currently contains screenshots and documentation, not Terraform or another infrastructure-as-code setup. |
 
 For the step-by-step walkthrough, see [Steps documentation](Steps_documentation.md).
 
