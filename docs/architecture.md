@@ -1,26 +1,45 @@
 # Architecture
 
-**Status:** this is the intended target architecture. The repository presently contains manual web-server/phpMyAdmin setup notes only; it has no infrastructure-as-code or deployment evidence for the AWS services below.
+## Evidence-based overview
 
-## Design
+Repository screenshots document a VPC with public/private networking, two NAT gateways, private-subnet routing, security groups, a PHP application AMI and Launch Template, an Auto Scaling group, an ALB, an RDS MySQL database and subnet group, a WAF web ACL, CloudWatch alarms, SNS topics, and application/phpMyAdmin responses.
 
-- A VPC spans two Availability Zones, with public subnets for internet-facing entry/NAT and private subnets for application compute.
-- Route 53 provides the application DNS record. CloudFront caches static paths; AWS WAF filters requests before the ALB.
-- The ALB terminates HTTPS and routes to healthy EC2 instances in a private-subnet Auto Scaling group.
-- The application tier connects to a private Multi-AZ RDS database. The database is never publicly reachable.
-- Systems Manager Session Manager provides administrative access without a bastion host.
-- CloudWatch collects metrics and evaluates alarms; SNS sends notifications.
+The screenshots are point-in-time records. They do not prove current resource state or all settings. In particular, screenshots do not establish CloudFront or Route 53, RDS Multi-AZ failover, scaling policy behavior, confirmed SNS delivery, complete WAF rule coverage, or security-group least privilege.
 
-See [architecture.mmd](architecture.mmd) for the editable Mermaid source and the README for an embedded view.
+The diagram source is [architecture.mmd](architecture.mmd); it is embedded in the [README](../README.md#solution-architecture).
 
-## Trust boundaries and traffic
+## Request path
 
-| From | To | Intended traffic |
+1. Browser requests the application endpoint.
+2. The Application Load Balancer forwards requests to healthy PHP/Apache targets in the Auto Scaling group.
+3. The app connects to the RDS MySQL instance.
+4. Private instances use NAT gateways for outbound network access where routes are configured.
+5. CloudWatch alarms are intended to notify through SNS.
+6. WAF is present in the screenshot evidence; verify its association to the ALB and its rules in the live console.
+
+Route 53 and CloudFront are not evidenced and remain planned.
+
+## Component status
+
+| Component | Evidence | Qualification |
 |---|---|---|
-| Internet | CloudFront / ALB entry | HTTPS only |
-| ALB security group | App security group | Application port only |
-| App security group | DB security group | Database port only |
-| Managed EC2 instance | AWS Systems Manager endpoints/services | Required management egress |
-| Application/ALB metrics | CloudWatch | Metrics and logs as configured |
+| VPC, subnet routing, NAT | Production VPC, NAT gateway, and private route screenshots | Verify AZs and route associations live |
+| Security groups | Security group list screenshot | Individual rules need review |
+| PHP/Apache and AMI | AMI, instance setup, and working page screenshots | Current package/application details unverified |
+| Launch Template and ASG | Console screenshots | Scaling policies and behavior unverified |
+| ALB | Console and working endpoint screenshots | Health-check state and distribution unverified |
+| RDS MySQL | DB subnet group and instance screenshots | Multi-AZ, encryption, backup, and public-access configuration unverified |
+| Systems Manager | Instance role screenshot | Managed-node/session success unverified |
+| WAF | Web ACL screenshot | Association/rules/testing unverified |
+| CloudWatch/SNS | Alarm and topic screenshots | Actions and delivery unverified |
+| CloudFront/Route 53 | No screenshots | Planned / not evidenced |
 
-Exact ports, CIDRs, endpoint choices, and listener behavior must be set in deployment configuration and reviewed before launch.
+## Intended trust boundaries
+
+- Internet-facing traffic enters through the intended edge/load-balancer path.
+- Application instances should reside in private subnets and accept application traffic only from the ALB security group.
+- RDS should be private and accept database traffic only from the application tier.
+- Instance administration should use Systems Manager instead of public SSH where configured.
+- Outbound access from private instances should be limited to required destinations.
+
+These are design intentions; verify the live security groups, routes, IAM roles, and database settings before describing them as enforced.
