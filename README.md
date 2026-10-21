@@ -39,34 +39,10 @@ Through this project, I worked on the following AWS concepts and skills:
 
 ## Solution architecture
 
-The diagram below reflects the screenshot evidence and labels areas that still need verification. Editable source: [docs/architecture.mmd](docs/architecture.mmd).
+the solution diagram using lucidcharts
 
-```mermaid
-flowchart LR
-  User[User browser] --> ALB[Application Load Balancer<br/>evidenced]
-  subgraph VPC[AWS VPC]
-    subgraph Public[Public subnets across two AZs]
-      ALB
-      NAT1[NAT Gateway AZ A<br/>evidenced]
-      NAT2[NAT Gateway AZ B<br/>evidenced]
-    end
-    subgraph Private[Private application subnets]
-      ASG[EC2 Auto Scaling group<br/>evidenced]
-      AppA[PHP / Apache instances<br/>AMI and Launch Template evidenced]
-    end
-    RDS[(RDS MySQL<br/>instance evidenced<br/>Multi-AZ unverified)]
-    ASG --> AppA
-    AppA --> RDS
-    AppA --> NAT1
-    AppA --> NAT2
-  end
-  WAF[AWS WAF web ACL<br/>evidenced] -. association/configuration to verify .-> ALB
-  SSM[Systems Manager role/access setup<br/>screenshot evidence] -. management .-> AppA
-  CW[CloudWatch alarms<br/>evidenced] --> SNS[SNS topics<br/>evidenced]
-  AppA -. metrics/logs .-> CW
-  DNS[Route 53] -. planned / no screenshot evidence .-> User
-  CF[CloudFront] -. planned / no screenshot evidence .-> ALB
-```
+[diagram](Screenshots/lucid-project-diagram.png)
+
 
 ## Request flow
 
