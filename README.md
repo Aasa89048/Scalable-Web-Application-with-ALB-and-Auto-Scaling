@@ -41,7 +41,7 @@ Through this project, I worked on the following AWS concepts and skills:
 
 the solution diagram using lucidcharts
 
-[diagram](Screenshots/lucid-project-diagram.png)
+![diagram](Screenshots/lucid-project-diagram.png)
 
 
 ## Request flow
