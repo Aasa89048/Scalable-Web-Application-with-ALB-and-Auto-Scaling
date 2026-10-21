@@ -46,15 +46,7 @@ I created a custom AMI to use as the starting image for the PHP application inst
 
 Before using the image in a new deployment, confirm it is available in the correct AWS Region and contains the packages the app needs. It should not contain credentials, temporary files, or other sensitive information.
 
-### 6. Install and configure the web server
-
-The setup screenshot records the instance configuration, including the web server setup. The project notes refer to Apache and PHP, with phpMyAdmin used for database administration.
-
-![Web server and application setup](Screenshots/config-LTami-instance.png)
-
-For a repeatable deployment, I would keep the setup steps in a reviewed bootstrap script or configuration-management process. Passwords and other secrets should not be placed directly in user data.
-
-### 7. Check the EC2 instance
+### 6. Check the EC2 instance
 
 This screenshot shows an EC2 instance used during application setup.
 
@@ -62,19 +54,27 @@ This screenshot shows an EC2 instance used during application setup.
 
 One thing worth checking here is the public IPv4 address shown in the screenshot. Confirm whether this was only a temporary instance used to prepare the AMI or whether it belongs to the running application tier. For the intended private-subnet design, application instances should normally receive traffic through the ALB, with inbound access restricted accordingly. Also check the attached security groups and IAM role.
 
-### 8. Create the Launch Template
+### 7. Install and configure the web server
 
-The Launch Template stores the instance settings that the Auto Scaling group uses when launching application servers.
+The setup screenshot records the instance configuration, including the web server setup. The project notes refer to Apache and PHP, with phpMyAdmin used for database administration.
 
-![PHP application Launch Template](Screenshots/php-app-LT.png)
+![Web server and application setup](Screenshots/config-LTami-instance.png)
 
-### 9. Review the Launch Template settings
+For a repeatable deployment, I would keep the setup steps in a reviewed bootstrap script or configuration-management process. Passwords and other secrets should not be placed directly in user data.
+
+### 8. Review the Launch Template settings
 
 This screenshot shows the Launch Template details and version information.
 
 ![Launch Template details](Screenshots/LTami-instance-working.png)
 
 Before using a template version, check its AMI, instance type, subnet/network settings, security groups, IAM instance profile, storage encryption, and metadata options. The screenshot is a reference, not proof that every setting is correct.
+
+### 9. Create the Launch Template
+
+The Launch Template stores the instance settings that the Auto Scaling group uses when launching application servers.
+
+![PHP application Launch Template](Screenshots/php-app-LT.png)
 
 ### 10. Configure Systems Manager access
 
@@ -100,27 +100,11 @@ The ALB is the entry point for requests going to the application.
 
 ![Application Load Balancer](Screenshots/ALB.png)
 
-Check the listeners, certificate if HTTPS is configured, target group, health-check path and port, selected subnets, and security group. Before testing the application, make sure the registered targets are healthy.
-
-### 13. Open the application on the instance
-
-This screenshot shows the web application responding from the EC2 setup.
-
-![Application response](Screenshots/LTami-instance-working.png)
-
-Use this as a basic check that the web server is serving a page. It does not confirm that requests are going through the load balancer.
-
-### 14. Test the application through the ALB
-
-The next screenshot records the PHP application responding through the load-balancer endpoint.
-
-![PHP application through the load balancer](Screenshots/php-app-lb-working%282%29.png)
-
-To check the load-balancing behavior properly, send several requests and confirm that healthy targets are registered. If the page displays an instance identifier, use it to check whether requests reach different instances. A single screenshot is not enough to prove traffic distribution or failover.
+Check the listeners, certificate if HTTPS is configured, target group, health-check path and port, selected subnets, and security group. Complete the application test only after the database setup and access checks below.
 
 ## Part 4: Connecting the database
 
-### 15. Set up the DB subnet group
+### 13. Set up the DB subnet group
 
 The RDS subnet group screenshot shows subnets in two Availability Zones.
 
@@ -128,7 +112,7 @@ The RDS subnet group screenshot shows subnets in two Availability Zones.
 
 Confirm that the subnet group belongs to the intended VPC and uses private subnets in at least two AZs. Check the route tables as well; the subnet group alone does not guarantee that the database is private.
 
-### 16. Review the MySQL database
+### 14. Review the MySQL database
 
 This screenshot records the RDS MySQL database instance used by the project.
 
@@ -136,7 +120,7 @@ This screenshot records the RDS MySQL database instance used by the project.
 
 In the live console, review public accessibility, Multi-AZ configuration, backups, encryption, maintenance settings, and the database security group. The screenshot does not demonstrate a Multi-AZ failover test.
 
-### 17. Check database access through phpMyAdmin
+### 15. Check database access through phpMyAdmin
 
 The project includes a phpMyAdmin view for database administration.
 
@@ -144,9 +128,17 @@ The project includes a phpMyAdmin view for database administration.
 
 Use the running application to confirm that it is connecting to the intended RDS endpoint and that the displayed database content is coming from that instance. The screenshot alone cannot confirm where the endpoint or credentials are configured. Keep database secrets out of the repository, screenshots, and user data; a proper deployment should store secrets securely rather than relying on manual settings.
 
+### 16. Test the application through the ALB
+
+After confirming database connectivity, test the application through the load-balancer endpoint.
+
+![PHP application through the load balancer](Screenshots/php-app-lb-working%282%29.png)
+
+To check the load-balancing behavior properly, send several requests and confirm that healthy targets are registered. If the page displays an instance identifier, use it to check whether requests reach different instances. A single screenshot is not enough to prove traffic distribution or failover.
+
 ## Part 5: Security and monitoring
 
-### 18. Review AWS WAF
+### 17. Review AWS WAF
 
 The WAF screenshot records a web ACL associated with the project setup.
 
@@ -154,7 +146,7 @@ The WAF screenshot records a web ACL associated with the project setup.
 
 Confirm that the web ACL is associated with the intended ALB, then review the enabled rules and any scope-down settings. If you want to claim that WAF blocks particular requests, test that behavior safely and keep evidence of the result. Creating a web ACL alone does not prove that a particular class of attack is blocked.
 
-### 19. Check the CloudWatch alarms
+### 18. Check the CloudWatch alarms
 
 This screenshot shows the CloudWatch alarms created for the project.
 
@@ -162,7 +154,7 @@ This screenshot shows the CloudWatch alarms created for the project.
 
 For each alarm, check its metric, threshold, evaluation period, current state, and configured action. Where practical, trigger a safe test condition and confirm that the alarm changes state as expected.
 
-### 20. Check the SNS topics
+### 19. Check the SNS topics
 
 The SNS console screenshot records the topics used for notifications.
 
@@ -170,7 +162,7 @@ The SNS console screenshot records the topics used for notifications.
 
 Make sure the CloudWatch alarm actions point to the correct topic and that the intended email subscriptions have been confirmed. The presence of a topic does not prove that a notification was delivered, so test delivery before documenting it as working.
 
-### 21. Review the phpMyAdmin endpoint
+### 20. Review the phpMyAdmin endpoint
 
 This screenshot shows the phpMyAdmin login page at the project endpoint.
 
@@ -180,7 +172,7 @@ Keep credentials out of the documentation and avoid exposing administrative tool
 
 ## Part 6: Keeping the S3 bucket private and connecting CloudFront
 
-### 22. Create and check the private S3 bucket
+### 21. Create and check the private S3 bucket
 
 I added an S3 bucket for the static content and kept the bucket private rather than making the objects public.
 
@@ -188,7 +180,7 @@ I added an S3 bucket for the static content and kept the bucket private rather t
 
 When checking this in AWS, confirm that Block Public Access is enabled and that the bucket policy does not allow public access. The screenshot records the configuration at the time it was taken, so review the current bucket settings if you change the setup later.
 
-### 23. Configure Origin Access Control (OAC) for CloudFront
+### 22. Configure Origin Access Control (OAC) for CloudFront
 
 I also captured the CloudFront origin access setup used with S3. Origin Access Control lets CloudFront request objects from the bucket without making the bucket itself public.
 
