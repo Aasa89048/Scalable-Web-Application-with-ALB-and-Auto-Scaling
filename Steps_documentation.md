@@ -62,7 +62,7 @@ This EC2 detail view shows an application instance and its network placement.
 
 ![Step 7 — Application EC2 instance](Screenshots/LT-ami-instance.png)
 
-**Verify:** confirm the instance is in a private application subnet, has the expected security groups and IAM role, and is not assigned a public IP unless explicitly required.
+**Important:** this instance summary shows a public IPv4 address. Determine whether it is a temporary setup/AMI-building host or part of the application Auto Scaling group. If application instances have public IPs, move the app tier to private subnets and restrict ingress to the ALB. Also confirm the expected security groups and IAM role.
 
 ### Step 8 — Review the Launch Template
 
@@ -114,7 +114,7 @@ This browser capture shows the basic application response from an EC2-hosted web
 
 This browser capture shows the PHP application endpoint served through the load-balancer path.
 
-![Step 14 — PHP application through the load balancer](Screenshots/php-app-lb-working(2).png)
+![Step 14 — PHP application through the load balancer](Screenshots/php-app-lb-working%282%29.png)
 
 **Verify:** make repeated requests and confirm healthy registered targets serve them. If the application displays an instance identifier, use it to demonstrate distribution; the screenshot alone does not prove traffic balancing or failover.
 
@@ -140,9 +140,9 @@ The database console view records the project’s MySQL database instance.
 
 This phpMyAdmin console screenshot shows database access from the web application environment.
 
-![Step 17 — phpMyAdmin database connection](Screenshots/php-mysql-db.png)
+![Step 17 — phpMyAdmin database view](Screenshots/php-app-lb-working%282%29.png)
 
-**Verify:** ensure the connection uses the private RDS endpoint and secrets are not embedded in source, screenshots, or user data. The project should eventually replace interactive/manual DB settings with secure parameter storage.
+**Verify:** use the live application to confirm the database view is populated by the RDS endpoint; the screenshot alone cannot establish the endpoint or credential source. Ensure secrets are not embedded in source, screenshots, or user data. The project should eventually replace interactive/manual DB settings with secure parameter storage.
 
 ## Phase 5 — Add edge protection and observability
 
