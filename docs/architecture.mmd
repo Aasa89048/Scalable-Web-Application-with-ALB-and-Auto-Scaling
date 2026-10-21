@@ -1,23 +1,22 @@
 flowchart LR
   User[User browser] --> ALB[Application Load Balancer<br/>screenshot evidence]
   subgraph VPC[AWS VPC - screenshot evidence]
-    subgraph Public[Public subnets - AZ spread to verify]
+    subgraph Public[Public subnets / AZ mapping to verify]
       NAT1[NAT Gateway A<br/>evidenced]
       NAT2[NAT Gateway B<br/>evidenced]
     end
-    subgraph Private[Private application subnets]
-      ASG[EC2 Auto Scaling group<br/>evidenced]
-      APP[PHP / Apache app<br/>AMI and Launch Template evidenced]
+    subgraph Private[Private subnets and private route to NAT evidenced]
+      PrivateNet[Private app subnet route]
     end
+    Compute[EC2 Auto Scaling group and PHP app<br/>resources evidenced<br/>subnet placement to verify]
     RDS[(RDS MySQL instance<br/>evidenced<br/>Multi-AZ unverified)]
-    ASG --> APP
-    APP --> RDS
-    APP -. outbound routes .-> NAT1
-    APP -. outbound routes .-> NAT2
+    Compute --> RDS
+    PrivateNet -. outbound via NAT .-> NAT1
+    PrivateNet -. outbound via NAT .-> NAT2
   end
   WAF[AWS WAF web ACL<br/>evidenced; association to verify] -.-> ALB
-  SSM[Systems Manager role/access<br/>evidence; session to verify] -.-> APP
+  SSM[Systems Manager role/access<br/>evidence; session to verify] -.-> Compute
   CW[CloudWatch alarms<br/>evidenced] --> SNS[SNS topics<br/>evidenced]
-  APP -. metrics/logs .-> CW
+  Compute -. metrics/logs .-> CW
   CF[CloudFront<br/>planned; no screenshot evidence] -.-> ALB
   R53[Route 53<br/>planned; no screenshot evidence] -.-> User
