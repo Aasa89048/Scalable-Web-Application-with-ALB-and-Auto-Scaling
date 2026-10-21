@@ -1,173 +1,173 @@
 # How I Built the AWS Web Application
 
-This file walks through the main steps I followed for the project, using the screenshots in the `Screenshots/` folder as a record of the setup. The screenshots show what was on screen when I captured them, so I still recommend checking the live AWS console before assuming a resource is running or a setting is unchanged.
+This document describes how I built the AWS web application, with screenshots in the `Screenshots/` folder documenting key parts of the setup. The screenshots reflect the configuration at the time I captured them; they do not necessarily show the current state of the resources.
 
 ## Part 1: Setting up the network
 
-### 1. Review the VPC layout
+### 1. Reviewed the VPC layout
 
-I started by checking the VPC and how its subnets and routing were arranged. This is the foundation for the rest of the setup, because the load balancer, application instances, and database all depend on the network being configured correctly.
+I started by reviewing the VPC and how its subnets and route tables were arranged. This gave me the network foundation for the load balancer, application instances, and database.
 
 ![VPC layout](Screenshots/Productionvpc.png)
 
-When reviewing this step in AWS, check the subnet CIDRs, Availability Zones, and route table associations in the console rather than relying on the screenshot for exact values.
+I used the AWS console to review the subnet CIDRs, Availability Zones, and route table associations.
 
 ### 2. Set up NAT gateways
 
-The project screenshot shows two NAT gateways, one in each Availability Zone. They are intended to let resources in private subnets make outbound connections without giving those instances a direct route from the internet.
+I set up two NAT gateways, one in each Availability Zone, so resources in private subnets could make outbound connections without being directly reachable from the internet.
 
 ![NAT gateways in two Availability Zones](Screenshots/two-natgtws-one-in-each-az.png)
 
-Make sure both gateways are available and that each private subnet routes outbound traffic through the intended NAT gateway. NAT gateways can continue to incur charges while they exist.
+I arranged the private subnet routes to use the intended NAT gateway. NAT gateways can continue to incur charges while they exist.
 
-### 3. Check the private subnet route
+### 3. Checked the private subnet route
 
-I checked the route table used by the PHP application subnet to see how outbound traffic reaches the NAT gateway.
+I reviewed the route table used by the PHP application subnet to understand how its outbound traffic reached the NAT gateway.
 
 ![Private subnet route to NAT](Screenshots/route-to-natgtw-from-php-app-private-subnet.png)
 
-The route table should include the local VPC route and the expected default route to NAT. The application subnet should not have an unintended direct route to an internet gateway.
+The route table screenshot records the private subnet's routing setup, including the local VPC route and the default route to NAT. I used this to review the intended routing path rather than treating the screenshot as proof of the current configuration.
 
-### 4. Review the security groups
+### 4. Reviewed the security groups
 
-This screenshot records the security groups created for the project.
+I created and reviewed the security groups used in the project.
 
 ![Project security groups](Screenshots/Security-groups.png)
 
-Open each security group in AWS and check the actual inbound and outbound rules. The screenshot is not clear enough to confirm every port or source range. As a general rule, the application should accept web traffic from the load balancer, and the database should accept connections only from the application tier.
+I used security groups to control traffic between the application, load balancer, and database tiers. The screenshot does not make every port or source range legible, so it should not be treated as a complete record of each rule.
 
 ## Part 2: Preparing the application instances
 
-### 5. Create the application AMI
+### 5. Created the application AMI
 
 I created a custom AMI to use as the starting image for the PHP application instances.
 
 ![PHP application AMI](Screenshots/php-app-ami.png)
 
-Before using the image in a new deployment, confirm it is available in the correct AWS Region and contains the packages the app needs. It should not contain credentials, temporary files, or other sensitive information.
+I used the AMI as the base image for launching application servers. The screenshot records the image at the time I captured it; it does not independently verify every package or setting included in the image.
 
-### 6. Check the EC2 instance
+### 6. Checked the EC2 instance
 
-This screenshot shows an EC2 instance used during application setup.
+I reviewed the EC2 instance I used during application setup.
 
 ![Application EC2 instance](Screenshots/LT-ami-instance.png)
 
-One thing worth checking here is the public IPv4 address shown in the screenshot. Confirm whether this was only a temporary instance used to prepare the AMI or whether it belongs to the running application tier. For the intended private-subnet design, application instances should normally receive traffic through the ALB, with inbound access restricted accordingly. Also check the attached security groups and IAM role.
+The screenshot includes a public IPv4 address. It does not establish whether that address belonged to a temporary instance used to prepare the AMI or to a running application instance. For the intended private-subnet design, I aimed to route application traffic through the ALB and restrict direct inbound access. I also reviewed the instance's security groups and IAM role.
 
-### 7. Install and configure the web server
+### 7. Installed and configured the web server
 
-The setup screenshot records the instance configuration, including the web server setup. The project notes refer to Apache and PHP, with phpMyAdmin used for database administration.
+I configured the instance for the web application, including the web server setup. My project setup used Apache and PHP, with phpMyAdmin for database administration.
 
 ![Web server and application setup](Screenshots/config-LTami-instance.png)
 
-For a repeatable deployment, I would keep the setup steps in a reviewed bootstrap script or configuration-management process. Passwords and other secrets should not be placed directly in user data.
+For a repeatable deployment, I would move the setup into a reviewed bootstrap script or configuration-management process. I avoided treating user data as a place to store passwords or other secrets.
 
-### 8. Review the Launch Template settings
+### 8. Reviewed the Launch Template settings
 
-This screenshot shows the Launch Template details and version information.
+I reviewed the Launch Template details and version information before using it to launch application servers.
 
 ![Launch Template details](Screenshots/LTami-instance-working.png)
 
-Before using a template version, check its AMI, instance type, subnet/network settings, security groups, IAM instance profile, storage encryption, and metadata options. The screenshot is a reference, not proof that every setting is correct.
+The settings I considered included the AMI, instance type, network configuration, security groups, IAM instance profile, storage encryption, and metadata options. The screenshot records the displayed settings but does not prove that every setting was correct.
 
-### 9. Create the Launch Template
+### 9. Created the Launch Template
 
-The Launch Template stores the instance settings that the Auto Scaling group uses when launching application servers.
+I created a Launch Template to store the instance settings that the Auto Scaling group would use when launching application servers.
 
 ![PHP application Launch Template](Screenshots/php-app-LT.png)
 
-### 10. Configure Systems Manager access
+### 10. Configured Systems Manager access
 
-I also recorded the role and configuration used for Systems Manager access to the application instance.
+I configured the role and access setup for using AWS Systems Manager with the application instance.
 
 ![Systems Manager role setup](Screenshots/php-app-LT-ssm-connection-role.png)
 
-Check that the instance appears as a managed node and that Session Manager can open a session. This is preferable to leaving SSH open to the internet. Review the role permissions and keep them limited to what the instance actually needs.
+I used Session Manager as the preferred way to access the managed instance rather than leaving SSH open to the internet. The screenshot records the role setup; it does not by itself confirm that a Session Manager session was successfully opened or that all permissions were least-privilege.
 
 ## Part 3: Load balancing and scaling
 
-### 11. Review the Auto Scaling group
+### 11. Set up the Auto Scaling group
 
-The Auto Scaling group uses the Launch Template to create and manage application instances.
+I configured an Auto Scaling group to use the Launch Template to create and manage application instances.
 
 ![Auto Scaling group](Screenshots/ASG.png)
 
-Check the minimum, desired, and maximum capacity, the subnets selected across Availability Zones, the health-check settings, and the target group attachment. Also review the scaling policy. This screenshot shows the group configuration, but it does not by itself demonstrate that scaling has been triggered successfully.
+I reviewed the minimum, desired, and maximum capacity, the subnets across Availability Zones, the health-check settings, the target group attachment, and the scaling policy. The screenshot shows the group's configuration but does not by itself prove that a scaling event occurred successfully.
 
-### 12. Review the Application Load Balancer
+### 12. Set up the Application Load Balancer
 
-The ALB is the entry point for requests going to the application.
+I configured the Application Load Balancer as the entry point for requests to the application.
 
 ![Application Load Balancer](Screenshots/ALB.png)
 
-Check the listeners, certificate if HTTPS is configured, target group, health-check path and port, selected subnets, and security group. Complete the application test only after the database setup below.
+I reviewed the listeners, certificate where HTTPS was configured, target group, health-check path and port, selected subnets, and security group. I left the end-to-end application test until after the database setup.
 
 ## Part 4: Connecting the database
 
 ### 13. Set up the DB subnet group
 
-The RDS subnet group screenshot shows subnets in two Availability Zones.
+I configured the RDS DB subnet group using subnets in two Availability Zones.
 
 ![RDS DB subnet group](Screenshots/db-subnet-group.png)
 
-Confirm that the subnet group belongs to the intended VPC and uses private subnets in at least two AZs. Check the route tables as well; the subnet group alone does not guarantee that the database is private.
+I reviewed whether the subnet group belonged to the intended VPC and used private subnets across at least two AZs. A subnet group alone does not guarantee that a database is private, so I considered the route tables and database accessibility settings as well.
 
-### 14. Review the MySQL database
+### 14. Set up the MySQL database
 
-This screenshot records the RDS MySQL database instance used by the project.
+I set up the RDS MySQL database instance used by the project.
 
 ![RDS MySQL database](Screenshots/php-mysql-db.png)
 
-In the live console, review public accessibility, Multi-AZ configuration, backups, encryption, maintenance settings, and the database security group. The screenshot does not demonstrate a Multi-AZ failover test.
+I reviewed the database's public accessibility, Multi-AZ configuration, backups, encryption, maintenance settings, and security group. The screenshot documents the instance view, but it does not demonstrate that a Multi-AZ failover test was performed.
 
-### 15. Test the application through the ALB
+### 15. Tested the application through the ALB
 
-After completing the database setup, test the application through the load-balancer endpoint.
+After completing the database setup, I tested the application through the load-balancer endpoint.
 
 ![PHP application through the load balancer](Screenshots/php-app-lb-working%282%29.png)
 
-To check the load-balancing behavior properly, send several requests and confirm that healthy targets are registered. If the page displays an instance identifier, use it to check whether requests reach different instances. A single screenshot is not enough to prove traffic distribution or failover.
+I used the endpoint to check that the application responded through the ALB. A more complete load-balancing test would involve sending several requests and confirming that healthy targets were registered. If the page displays an instance identifier, that can help show whether requests reach different instances; a single screenshot alone does not prove traffic distribution or failover.
 
 ## Part 5: Security and monitoring
 
-### 16. Review AWS WAF
+### 16. Set up AWS WAF
 
-The WAF screenshot records a web ACL associated with the project setup.
+I configured an AWS WAF web ACL for the project and captured its setup.
 
 ![AWS WAF web ACL](Screenshots/waf-ALB.png)
 
-Confirm that the web ACL is associated with the intended ALB, then review the enabled rules and any scope-down settings. If you want to claim that WAF blocks particular requests, test that behavior safely and keep evidence of the result. Creating a web ACL alone does not prove that a particular class of attack is blocked.
+I reviewed the association with the intended ALB, the enabled rules, and any scope-down settings. The screenshot does not establish that specific attack traffic was blocked; that would require a separate, controlled test.
 
-### 17. Check the CloudWatch alarms
+### 17. Configured CloudWatch alarms
 
-This screenshot shows the CloudWatch alarms created for the project.
+I created CloudWatch alarms to monitor the project.
 
 ![CloudWatch alarms](Screenshots/cloudwatch-alarms.png)
 
-For each alarm, check its metric, threshold, evaluation period, current state, and configured action. Where practical, trigger a safe test condition and confirm that the alarm changes state as expected.
+I reviewed the metric, threshold, evaluation period, state, and configured action for the alarms. The screenshot records the alarm configuration, but does not by itself prove that a test condition triggered an alarm as expected.
 
-### 18. Check the SNS topics
+### 18. Set up SNS topics
 
-The SNS console screenshot records the topics used for notifications.
+I configured SNS topics for project notifications.
 
 ![SNS topics](Screenshots/sns-topics.png)
 
-Make sure the CloudWatch alarm actions point to the correct topic and that the intended email subscriptions have been confirmed. The presence of a topic does not prove that a notification was delivered, so test delivery before documenting it as working.
+I reviewed whether the CloudWatch alarm actions pointed to the intended topic and whether the relevant email subscriptions were confirmed. The presence of a topic does not by itself confirm that a notification was delivered.
 
 ## Part 6: Keeping the S3 bucket private and connecting CloudFront
 
-### 19. Create and check the private S3 bucket
+### 19. Created the private S3 bucket
 
-I added an S3 bucket for the static content and kept the bucket private rather than making the objects public.
+I created an S3 bucket for static content and kept the bucket private rather than making its objects publicly accessible.
 
 ![Private S3 bucket](Screenshots/private-s3.png)
 
-When checking this in AWS, confirm that Block Public Access is enabled and that the bucket policy does not allow public access. The screenshot records the configuration at the time it was taken, so review the current bucket settings if you change the setup later.
+I captured the bucket setup as a record of the configuration at that time. The screenshot alone does not confirm the bucket's current settings or policy.
 
-### 20. Configure Origin Access Control (OAC) for CloudFront
+### 20. Configured Origin Access Control (OAC) for CloudFront
 
-I also captured the CloudFront origin access setup used with S3. Origin Access Control lets CloudFront request objects from the bucket without making the bucket itself public.
+I captured the CloudFront origin access setup used with S3. Origin Access Control allows CloudFront to request objects from the bucket without making the bucket itself public.
 
 ![S3 and CloudFront origin access control settings](Screenshots/control-setting-for-s3andcloudfront.png)
 
-Check that the CloudFront distribution uses the correct S3 origin and that the OAC is selected for that origin. The S3 bucket policy must allow the intended CloudFront distribution to read objects. Once configured, test the content through the CloudFront distribution URL and confirm that direct access to the S3 object is still blocked.
+I reviewed the S3 origin and OAC configuration. For the intended private-origin setup, the bucket policy needs to allow the intended CloudFront distribution to read objects. The screenshot documents the configuration, but does not independently prove that CloudFront delivery worked or that direct S3 object access was blocked.
