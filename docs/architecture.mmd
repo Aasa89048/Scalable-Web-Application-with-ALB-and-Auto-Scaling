@@ -1,0 +1,30 @@
+flowchart LR
+  U[Visitors] --> R53[Route 53 alias and health checks]
+  R53 --> CF[CloudFront static cache]
+  CF --> WAF[AWS WAF web ACL]
+  WAF --> ALB[Application Load Balancer]
+  subgraph VPC[Target VPC: two Availability Zones]
+    subgraph AZA[AZ A]
+      PUBA[Public subnet / NAT]
+      APPA[Private app subnet]
+      ECA[EC2 instance in Auto Scaling group]
+      DBA[(RDS Multi-AZ primary)]
+    end
+    subgraph AZB[AZ B]
+      PUBB[Public subnet / NAT]
+      APPB[Private app subnet]
+      ECB[EC2 instance in Auto Scaling group]
+      DBB[(RDS standby / failover)]
+    end
+    ALB --> ECA
+    ALB --> ECB
+    ECA --> DBA
+    ECB --> DBA
+    SSM[Systems Manager Session Manager] -. secure administration .-> ECA
+    SSM -. secure administration .-> ECB
+  end
+  CW[CloudWatch dashboard and alarms] --> SNS[SNS notifications]
+  ECA -. metrics .-> CW
+  ECB -. metrics .-> CW
+  NOTE[Target design only; resources not verified as deployed]
+  NOTE -.-> ALB
