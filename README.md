@@ -2,7 +2,7 @@
 
 A hands-on AWS project that builds and demonstrates a PHP web application behind an Application Load Balancer, with EC2 Auto Scaling, a VPC split into public/private subnets, a database, and operational/security services.
 
-> **Status based on repository evidence:** screenshots document a working project in AWS, including VPC networking, two NAT gateways, private subnet routing, security groups, a PHP AMI/Launch Template, an Auto Scaling group, an ALB, RDS, WAF, CloudWatch alarms, SNS topics, and a working application/phpMyAdmin view. Screenshots are evidence from the time they were captured; they do not prove that resources still exist or that every configuration is production-ready. See [implementation status](#implementation-status).
+> **Status based on repository evidence:** screenshots document AWS resources and a working application/phpMyAdmin view: VPC networking, two NAT gateways, private subnet routing, security groups, a PHP AMI/Launch Template, an Auto Scaling group, an ALB, RDS, WAF, CloudWatch alarms, and SNS topics. One EC2 instance screenshot shows a public IPv4 address; it is not clear whether that instance is a temporary setup host or an application node. Confirm the ASG subnet placement before describing compute as private. Screenshots do not prove resources still exist or every configuration is production-ready. See [implementation status](#implementation-status).
 
 ## What this project demonstrates
 
@@ -57,7 +57,7 @@ flowchart LR
 
 | Component | Evidence in repository | Status / limits |
 |---|---|---|
-| VPC and subnet layout | [VPC screenshot](Screenshots/Productionvpc.png), NAT and route screenshots | Configured resources are visible in screenshots; exact CIDRs, subnet mapping, and route associations need live verification |
+| VPC and subnet layout | [VPC screenshot](Screenshots/Productionvpc.png), NAT and route screenshots | Resources are visible; exact CIDRs and routes need live verification. One instance screenshot shows a public IPv4 address, so app-tier placement must be confirmed |
 | NAT gateways | [Two NAT gateways screenshot](Screenshots/two-natgtws-one-in-each-az.png) | Two gateways are visible; current state and route usage can change |
 | Private-subnet routing | [Private route table screenshot](Screenshots/route-to-natgtw-from-php-app-private-subnet.png) | Route to NAT is shown; full route table details should be checked live |
 | Security groups | [Security groups screenshot](Screenshots/Security-groups.png) | Groups exist; rules are too small in the screenshot to certify least privilege |
@@ -65,7 +65,7 @@ flowchart LR
 | AMI and Launch Template | [AMI](Screenshots/php-app-ami.png), [Launch Template](Screenshots/php-app-LT.png), [user data setup](Screenshots/config-LTami-instance.png) | Screenshots show these resources and setup; repeatability and current versions are unverified |
 | Systems Manager | [SSM role screenshot](Screenshots/php-app-LT-ssm-connection-role.png) | Role/access configuration is shown; a successful Session Manager session is not independently proven by this image |
 | Auto Scaling | [ASG screenshot](Screenshots/ASG.png) | Group is shown; scaling policy behavior and instance replacement tests are not documented |
-| Load balancing | [ALB screenshot](Screenshots/ALB.png), [application via load balancer](Screenshots/php-app-lb-working(2).png) | ALB and application response are shown; target health and multi-instance distribution require live checks |
+| Load balancing | [ALB screenshot](Screenshots/ALB.png), [application via load balancer](Screenshots/php-app-lb-working%282%29.png) | ALB and application response are shown; target health and multi-instance distribution require live checks |
 | Database | [RDS subnet group](Screenshots/db-subnet-group.png), [RDS instance](Screenshots/php-mysql-db.png) | Database and subnet group are shown; Multi-AZ failover, backup, encryption, and public-access settings are unverified |
 | AWS WAF | [WAF screenshot](Screenshots/waf-ALB.png) | Web ACL is shown; association, rule coverage, and blocking tests should be checked live |
 | CloudWatch and SNS | [Alarms](Screenshots/cloudwatch-alarms.png), [topics](Screenshots/sns-topics.png) | Alarms and topics exist in screenshots; alarm actions and confirmed delivery are not demonstrated |
