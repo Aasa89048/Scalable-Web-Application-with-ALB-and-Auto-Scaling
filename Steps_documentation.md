@@ -170,7 +170,7 @@ The SNS screenshot records notification topics for alarm routing.
 
 **Verify:** confirm the alarm actions target the intended topic and each email/endpoint subscription is confirmed. The screenshot does not demonstrate message delivery.
 
-## Step 21 — Open phpMyAdmin through the project endpoint
+### Step 21 — Open phpMyAdmin through the project endpoint
 
 This final browser screenshot shows the phpMyAdmin login page at the load-balanced endpoint. Keep credentials out of public documentation and consider whether a public phpMyAdmin endpoint is appropriate for a portfolio demo.
 
