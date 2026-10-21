@@ -1,16 +1,17 @@
-# Security design
+# Security review
 
-**Status:** controls below are planned design requirements. The current repository does not contain AWS security configuration proving they are enabled.
+The screenshots show security groups, an instance role/Systems Manager setup, and a WAF web ACL. They are useful project evidence but are not enough to certify production security. Verify the actual configuration before making stronger claims.
 
-- Keep application and database instances in private subnets; expose only the intended load-balancer entry point.
-- Use security-group references and least privilege: ALB to app port, app tier to database port, and only required management/service egress.
-- Use Systems Manager Session Manager instead of a public bastion or open SSH ingress.
-- Require HTTPS with a managed certificate; restrict administrative access and protect DNS changes.
-- Associate AWS WAF with the public entry point and configure appropriate managed rule groups, rate controls, logging, and exceptions. Review false positives; do not claim OWASP coverage solely from enabling a rule group.
-- Keep database credentials in a managed secret store, rotate them, and never commit secrets.
-- Enable encryption at rest and in transit where supported; define backup retention and recovery expectations.
-- Apply IAM least privilege, instance profiles, resource tags, and CloudTrail/audit logging.
-- Review NACLs and security groups together; NACLs are stateless and require return-path rules.
-- Store logs securely and avoid logging credentials, tokens, or sensitive user data.
+## Review checklist
 
-Before deployment, document concrete ports, IAM policies, encryption settings, WAF rules, backup retention, and log retention, then validate them against the actual AWS environment.
+- **Network:** application and database instances should be in private subnets; inspect route tables, NACLs, and public IP assignment.
+- **Security groups:** permit only the intended paths (ALB to app, app to DB, and required egress). Review exact rules; the screenshot text is not sufficiently legible to certify them.
+- **Administration:** verify Systems Manager managed-node registration and a successful Session Manager connection. Avoid public SSH.
+- **Database:** verify private accessibility, encryption at rest/in transit, backups, secret storage, and Multi-AZ setting/failover separately.
+- **WAF:** verify the web ACL association, rule groups, logging, and test outcomes. A visible WAF ACL alone does not prove OWASP Top 10 coverage.
+- **IAM:** inspect instance-profile permissions and scope; grant only required actions.
+- **Application:** do not expose phpMyAdmin publicly in a production deployment. Protect it with access controls or remove it when no longer needed.
+- **Screenshots:** check for credentials, tokens, sensitive account information, and internal endpoints before adding new images.
+- **Unverified edge services:** CloudFront and Route 53 are not evidenced in the current screenshots.
+
+Use managed secret storage for database credentials; do not commit secrets or place them in user data.
