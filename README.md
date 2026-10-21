@@ -13,6 +13,30 @@ A hands-on AWS project that builds and demonstrates a PHP web application behind
 - Administrative access through AWS Systems Manager in the documented instance setup.
 - Web application firewall and basic monitoring/notification resources.
 
+## Key AWS Services
+
+The list below covers the services used in the project and the intended architecture. Some items still need live-console verification; CloudFront and Route 53 are not yet evidenced in the repository, and Multi-AZ failover and specific WAF rule behavior have not been demonstrated.
+
+- **VPC:** Public and private subnets, NAT gateways, security groups, and network ACLs (NACLs)
+- **EC2 + Auto Scaling Group (ASG):** Launch Template and scaling policies, including target tracking
+- **ALB + AWS WAF:** Layer 7 routing and WAF rules intended to help protect against common web application risks, including OWASP Top 10 categories
+- **CloudFront:** Intended for caching static assets and reducing latency; implementation still needs confirmation
+- **RDS Multi-AZ:** MySQL/PostgreSQL with automated failover; the current evidence shows an RDS MySQL instance, but Multi-AZ failover is unverified
+- **Route 53:** Intended alias record pointing to the ALB and health checks; implementation still needs confirmation
+- **Systems Manager:** Session Manager for secure instance access without relying on public SSH
+- **CloudWatch + SNS:** Monitoring dashboards, alarms, and notifications; delivery should be tested in the live environment
+
+## Learning Outcomes
+
+Through this project, I worked on the following AWS concepts and skills:
+
+- Design VPCs with suitable subnet, route table, and NAT gateway configurations
+- Build highly available architectures across multiple Availability Zones
+- Configure ALB listener rules and target group health checks
+- Set up Auto Scaling with target tracking and step scaling policies
+- Secure applications with WAF, security groups, and private subnets
+- Use Systems Manager Session Manager as a bastion-free alternative for instance access
+
 ## Solution architecture
 
 The diagram below reflects the screenshot evidence and labels areas that still need verification. Editable source: [docs/architecture.mmd](docs/architecture.mmd).
