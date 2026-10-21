@@ -177,3 +177,21 @@ This screenshot shows the phpMyAdmin login page at the project endpoint.
 ![phpMyAdmin login page](Screenshots/php-app-lb-working.png)
 
 Keep credentials out of the documentation and avoid exposing administrative tools unnecessarily. For a portfolio project, consider restricting access to phpMyAdmin rather than leaving it publicly reachable.
+
+## Part 6: Keeping the S3 bucket private and connecting CloudFront
+
+### 22. Create and check the private S3 bucket
+
+I added an S3 bucket for the static content and kept the bucket private rather than making the objects public.
+
+![Private S3 bucket](Screenshots/private-s3.png)
+
+When checking this in AWS, confirm that Block Public Access is enabled and that the bucket policy does not allow public access. The screenshot records the configuration at the time it was taken, so review the current bucket settings if you change the setup later.
+
+### 23. Configure Origin Access Control (OAC) for CloudFront
+
+I also captured the CloudFront origin access setup used with S3. Origin Access Control lets CloudFront request objects from the bucket without making the bucket itself public.
+
+![S3 and CloudFront origin access control settings](Screenshots/control-setting-for-s3andcloudfront.png)
+
+Check that the CloudFront distribution uses the correct S3 origin and that the OAC is selected for that origin. The S3 bucket policy must allow the intended CloudFront distribution to read objects. Once configured, test the content through the CloudFront distribution URL and confirm that direct access to the S3 object is still blocked.
