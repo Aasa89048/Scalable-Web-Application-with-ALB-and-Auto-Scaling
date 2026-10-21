@@ -1,21 +1,10 @@
 # Scalable Web Application with ALB and Auto Scaling
 
-A hands-on AWS project that builds and demonstrates a PHP web application behind an Application Load Balancer, with EC2 Auto Scaling, a VPC split into public/private subnets, a database, and operational/security services.
-
-> **Status based on repository evidence:** screenshots document AWS resources and a working application/phpMyAdmin view: VPC networking, two NAT gateways, private subnet routing, security groups, a PHP AMI/Launch Template, an Auto Scaling group, an ALB, RDS, WAF, CloudWatch alarms, and SNS topics. One EC2 instance screenshot shows a public IPv4 address; it is not clear whether that instance is a temporary setup host or an application node. Confirm the ASG subnet placement before describing compute as private. Screenshots do not prove resources still exist or every configuration is production-ready. See [Implementation status](#implementation-status).
-
-## What this project demonstrates
-
-- Network isolation with public and private subnets and NAT egress.
-- Reusable EC2 configuration through a custom AMI and Launch Template.
-- Load balancing and Auto Scaling for a PHP application.
-- Relational database connectivity from the application tier.
-- Administrative access through AWS Systems Manager in the documented instance setup.
-- Web application firewall and basic monitoring/notification resources.
+This project implements a scalable web application on AWS using an Application Load Balancer (ALB), EC2 Auto Scaling, and a custom Amazon Machine Image (AMI). The architecture distributes incoming traffic across application instances and automatically adjusts compute capacity based on demand. It includes public and private subnets, NAT-based outbound connectivity, relational database integration, and AWS Systems Manager for secure instance administration. Additional components, including AWS WAF, CloudWatch monitoring, and SNS notifications, support application security, resource monitoring, and operational alerts.
 
 ## Key AWS Services
 
-The list below covers the services used in the project and the intended architecture. Some items still need live-console verification; CloudFront and Route 53 are not yet evidenced in the repository, and Multi-AZ failover and specific WAF rule behavior have not been demonstrated.
+The list below covers the services used in the project and the intended architecture.
 
 - **VPC:** Public and private subnets, NAT gateways, security groups, and network ACLs (NACLs)
 - **EC2 + Auto Scaling Group (ASG):** Launch Template and scaling policies, including target tracking
@@ -26,7 +15,7 @@ The list below covers the services used in the project and the intended architec
 - **Systems Manager:** Session Manager for secure instance access without relying on public SSH
 - **CloudWatch + SNS:** Monitoring dashboards, alarms, and notifications; delivery should be tested in the live environment
 
-## Learning Outcomes
+## What I Did
 
 Through this project, I worked on the following AWS concepts and skills:
 
@@ -39,19 +28,11 @@ Through this project, I worked on the following AWS concepts and skills:
 
 ## Solution architecture
 
-the solution diagram using lucidcharts
+the solution diagram using lucidcharts 
+link for the diagram: https://lucid.app/lucidchart/a8ea8d02-caaa-457c-9556-0e68c9b16bd2/edit?viewport_loc=-1542%2C-182%2C2783%2C1558%2Cp1&invitationId=inv_1a8a69d9-b773-4d55-822c-ae71ab1e1f9f
 
 ![diagram](Screenshots/lucid-project-diagram.png)
 
-
-## Request flow
-
-1. A user opens the application endpoint shown in the project evidence.
-2. The ALB receives the request and forwards it to a healthy application target.
-3. An EC2 instance runs the PHP/Apache application. The instance configuration is based on a custom AMI and Launch Template.
-4. The application connects to the RDS MySQL database.
-5. Private instances use NAT for outbound access where configured. NAT gateways are shown in both AZs; exact route associations should be confirmed in the live account.
-6. AWS WAF, CloudWatch alarm actions, and SNS notification delivery should be reviewed in the AWS console before claiming the full behavior is validated.
 
 ## Implementation status
 

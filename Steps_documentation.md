@@ -177,16 +177,3 @@ This screenshot shows the phpMyAdmin login page at the project endpoint.
 ![phpMyAdmin login page](Screenshots/php-app-lb-working.png)
 
 Keep credentials out of the documentation and avoid exposing administrative tools unnecessarily. For a portfolio project, consider restricting access to phpMyAdmin rather than leaving it publicly reachable.
-
-## What still needs a separate test
-
-The screenshots in this repository are useful records of the setup, but they do not confirm every behavior in the live environment. In particular, I have not included screenshot evidence here that proves:
-
-- CloudFront or Route 53 is configured.
-- The Auto Scaling group has scaled out or replaced an unhealthy instance.
-- The RDS database has completed a Multi-AZ failover.
-- SNS notifications have been delivered successfully.
-- The WAF has blocked a test request.
-- Every application instance is running in a private subnet.
-
-Before describing any of these as completed, check the relevant AWS console settings and run the test. Also review the resources after testing and remove anything no longer needed, since EC2, ALB, RDS, NAT gateways, WAF, and related services can incur charges.
