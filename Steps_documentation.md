@@ -100,7 +100,7 @@ The ALB is the entry point for requests going to the application.
 
 ![Application Load Balancer](Screenshots/ALB.png)
 
-Check the listeners, certificate if HTTPS is configured, target group, health-check path and port, selected subnets, and security group. Complete the application test only after the database setup and access checks below.
+Check the listeners, certificate if HTTPS is configured, target group, health-check path and port, selected subnets, and security group. Complete the application test only after the database setup below.
 
 ## Part 4: Connecting the database
 
@@ -120,17 +120,9 @@ This screenshot records the RDS MySQL database instance used by the project.
 
 In the live console, review public accessibility, Multi-AZ configuration, backups, encryption, maintenance settings, and the database security group. The screenshot does not demonstrate a Multi-AZ failover test.
 
-### 15. Check database access through phpMyAdmin
+### 15. Test the application through the ALB
 
-The project includes a phpMyAdmin view for database administration.
-
-![phpMyAdmin database view](Screenshots/php-app-lb-working%282%29.png)
-
-Use the running application to confirm that it is connecting to the intended RDS endpoint and that the displayed database content is coming from that instance. The screenshot alone cannot confirm where the endpoint or credentials are configured. Keep database secrets out of the repository, screenshots, and user data; a proper deployment should store secrets securely rather than relying on manual settings.
-
-### 16. Test the application through the ALB
-
-After confirming database connectivity, test the application through the load-balancer endpoint.
+After completing the database setup, test the application through the load-balancer endpoint.
 
 ![PHP application through the load balancer](Screenshots/php-app-lb-working%282%29.png)
 
@@ -138,7 +130,7 @@ To check the load-balancing behavior properly, send several requests and confirm
 
 ## Part 5: Security and monitoring
 
-### 17. Review AWS WAF
+### 16. Review AWS WAF
 
 The WAF screenshot records a web ACL associated with the project setup.
 
@@ -146,7 +138,7 @@ The WAF screenshot records a web ACL associated with the project setup.
 
 Confirm that the web ACL is associated with the intended ALB, then review the enabled rules and any scope-down settings. If you want to claim that WAF blocks particular requests, test that behavior safely and keep evidence of the result. Creating a web ACL alone does not prove that a particular class of attack is blocked.
 
-### 18. Check the CloudWatch alarms
+### 17. Check the CloudWatch alarms
 
 This screenshot shows the CloudWatch alarms created for the project.
 
@@ -154,7 +146,7 @@ This screenshot shows the CloudWatch alarms created for the project.
 
 For each alarm, check its metric, threshold, evaluation period, current state, and configured action. Where practical, trigger a safe test condition and confirm that the alarm changes state as expected.
 
-### 19. Check the SNS topics
+### 18. Check the SNS topics
 
 The SNS console screenshot records the topics used for notifications.
 
@@ -162,17 +154,9 @@ The SNS console screenshot records the topics used for notifications.
 
 Make sure the CloudWatch alarm actions point to the correct topic and that the intended email subscriptions have been confirmed. The presence of a topic does not prove that a notification was delivered, so test delivery before documenting it as working.
 
-### 20. Review the phpMyAdmin endpoint
-
-This screenshot shows the phpMyAdmin login page at the project endpoint.
-
-![phpMyAdmin login page](Screenshots/php-app-lb-working.png)
-
-Keep credentials out of the documentation and avoid exposing administrative tools unnecessarily. For a portfolio project, consider restricting access to phpMyAdmin rather than leaving it publicly reachable.
-
 ## Part 6: Keeping the S3 bucket private and connecting CloudFront
 
-### 21. Create and check the private S3 bucket
+### 19. Create and check the private S3 bucket
 
 I added an S3 bucket for the static content and kept the bucket private rather than making the objects public.
 
@@ -180,7 +164,7 @@ I added an S3 bucket for the static content and kept the bucket private rather t
 
 When checking this in AWS, confirm that Block Public Access is enabled and that the bucket policy does not allow public access. The screenshot records the configuration at the time it was taken, so review the current bucket settings if you change the setup later.
 
-### 22. Configure Origin Access Control (OAC) for CloudFront
+### 20. Configure Origin Access Control (OAC) for CloudFront
 
 I also captured the CloudFront origin access setup used with S3. Origin Access Control lets CloudFront request objects from the bucket without making the bucket itself public.
 
