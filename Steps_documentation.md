@@ -138,67 +138,13 @@ I configured Origin Access Control for the CloudFront S3 origin so CloudFront co
 
 ### 21. Create a public hosted zone in Route 53
 
-1. Open the **Amazon Route 53** console and select **Hosted zones**.
-2. Choose **Create hosted zone**.
-3. Enter the registered domain name (for example, `cloudfolio.online`).
-4. Select **Public hosted zone**, then create the hosted zone.
-5. Open the hosted zone and note the four authoritative **NS** nameserver values. Route 53 also creates the default **SOA** record; keep both default records.
-
-If a public hosted zone for the domain already exists, use that zone instead of creating a duplicate.
-
-### 22. Delegate the domain to Route 53 at the registrar
-
-1. Sign in to the domain registrar where the domain was purchased (for example, Hostinger).
-2. Open the domain's **Nameservers** settings.
-3. Choose the option to use custom nameservers and replace the registrar's current nameservers with the **four NS values shown in the Route 53 hosted zone**.
-4. Save the change. Do not enter the ALB DNS name in the nameserver fields; the ALB DNS name belongs in a Route 53 record.
-5. Allow time for DNS delegation and resolver caches to update.
-
-The registrar's nameservers must match the NS records for the Route 53 hosted zone. Otherwise, public DNS queries may not reach the records created in Route 53.
-
-### 23. Create an A Alias record pointing to the Application Load Balancer
-
-1. In Route 53, open **Hosted zones** and select the public hosted zone for the domain.
-2. Choose **Create record**.
-3. For **Record name**, enter the desired subdomain prefix. For example, enter `mymanara` to create `mymanara.cloudfolio.online`. To use the zone apex (the root domain itself), leave the record name blank.
-4. Set **Record type** to **A**.
-5. Enable **Alias**.
-6. For **Route traffic to**, select **Alias to Application and Classic Load Balancer**.
-7. Select the AWS Region where the ALB was created (for this project, `us-east-1`), then choose the correct Application Load Balancer.
-8. Keep **Routing policy** as **Simple**, then choose **Create records**.
-
-For this project, the ALB DNS name is `dualstack.php-app-lb-156868472.us-east-1.elb.amazonaws.com`. Prefer selecting the ALB from the Route 53 target list so AWS fills in the correct target automatically. The alias record should target the ALB, not an individual EC2 instance or a fixed IP address.
-
-### 24. Verify the Route 53 hosted-zone record
-
-After creating the record, review the hosted zone and confirm that the record name is `mymanara`, the type is `A`, and **Alias** is enabled with the Application Load Balancer as the target.
-
 ![Route 53 hosted zone and DNS records](Screenshots/route53-hostedzone.png)
 
-The following screenshot provides another view of the records in the hosted zone.
+### 24. Verify the Route 53 hosted-zone record
 
 ![A record in the Route 53 hosted zone](Screenshots/recordinroute53hostedzone.png)
 
 ### 25. Test the A Alias record in Route 53
 
-1. Open the public hosted zone for `cloudfolio.online`.
-2. Select **Test record** for the `mymanara` A record.
-3. Use the default resolver IP or enter a resolver IP if you need to simulate a specific resolver location, then run the test.
-4. Review the **Response returned by Route 53** section.
-
 ![Route 53 Test record result showing No Error](Screenshots/evidencealiasrecordworks.png)
 
-**What this evidence proves:** The Route 53 test returned **DNS response code: No Error** for the `mymanara` A record in the `cloudfolio.online` hosted zone and displayed two IP addresses. This is evidence that Route 53 can answer the record test using the hosted-zone configuration.
-
-**What it does not prove on its own:** The Route 53 hosted-zone test does not independently confirm that the domain registrar delegates public DNS to this hosted zone, that all public resolvers can resolve the hostname, or that the application is reachable through the browser.
-
-### 26. Verify public DNS and application reachability separately
-
-1. Confirm that the domain registrar's nameservers match the four NS values in the Route 53 hosted zone.
-2. From a terminal, run `dig mymanara.cloudfolio.online A` or `nslookup mymanara.cloudfolio.online` and confirm the public DNS lookup returns answers.
-3. Open `http://mymanara.cloudfolio.online` in a browser (or use `https://` after configuring a valid certificate and HTTPS listener).
-4. If public DNS does not resolve, recheck registrar delegation, the hostname, and DNS propagation. If DNS resolves but the application does not load, check ALB listener rules, security groups, and target-group health.
-
-**HTTPS note:** An A Alias record only routes DNS traffic; it does not enable HTTPS by itself. To serve HTTPS on the custom domain, request or import an ACM certificate for the exact hostname in **US East (N. Virginia), `us-east-1`, when using an ALB in that Region**. Validate the certificate, add an HTTPS (443) listener to the ALB using that certificate, and ensure the ALB security group allows inbound TCP 443. Keep an HTTP (80) listener only if you want to redirect HTTP requests to HTTPS.
-
-**CloudFront note:** Use an alias to the ALB for a hostname intended to reach the dynamic PHP application through the ALB. If a hostname is intended to serve the CloudFront distribution instead, create its Route 53 alias to CloudFront and configure that hostname as an alternate domain name on the distribution. A single hostname should not be configured to point to both the ALB and CloudFront for this simple setup.
