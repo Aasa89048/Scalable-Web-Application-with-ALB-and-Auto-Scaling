@@ -148,3 +148,6 @@ I configured Origin Access Control for the CloudFront S3 origin so CloudFront co
 
 ![Route 53 Test record result showing No Error](Screenshots/evidencealiasrecordworks.png)
 
+### Route 53 alias record working
+
+![Route 53 alias record working](Screenshots/proofroute53aliasrecordworks.png)
