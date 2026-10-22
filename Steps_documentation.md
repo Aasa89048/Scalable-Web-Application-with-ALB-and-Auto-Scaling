@@ -169,12 +169,35 @@ The registrar's nameservers must match the NS records for the Route 53 hosted zo
 
 For this project, the ALB DNS name is `dualstack.php-app-lb-156868472.us-east-1.elb.amazonaws.com`. Prefer selecting the ALB from the Route 53 target list so AWS fills in the correct target automatically. The alias record should target the ALB, not an individual EC2 instance or a fixed IP address.
 
-### 24. Verify DNS and test the domain
+### 24. Verify the Route 53 hosted-zone record
 
-1. Confirm the new record appears in the hosted zone with type **A** and **Alias = Yes**.
-2. Confirm the domain registrar is using the same four Route 53 nameservers shown in the hosted zone.
-3. After DNS propagation, open the custom domain in a browser and check that the application responds.
-4. If the domain returns `ERR_NAME_NOT_RESOLVED`, verify nameserver delegation first, then confirm the record name and hosted zone. Also verify that the ALB is active and its target group reports healthy targets.
+After creating the record, review the hosted zone and confirm that the record name is `mymanara`, the type is `A`, and **Alias** is enabled with the Application Load Balancer as the target.
+
+![Route 53 hosted zone and DNS records](Screenshots/route53-hostedzone.png)
+
+The following screenshot provides another view of the records in the hosted zone.
+
+![A record in the Route 53 hosted zone](Screenshots/recordinroute53hostedzone.png)
+
+### 25. Test the A Alias record in Route 53
+
+1. Open the public hosted zone for `cloudfolio.online`.
+2. Select **Test record** for the `mymanara` A record.
+3. Use the default resolver IP or enter a resolver IP if you need to simulate a specific resolver location, then run the test.
+4. Review the **Response returned by Route 53** section.
+
+![Route 53 Test record result showing No Error](Screenshots/evidencealiasrecordworks.png)
+
+**What this evidence proves:** The Route 53 test returned **DNS response code: No Error** for the `mymanara` A record in the `cloudfolio.online` hosted zone and displayed two IP addresses. This is evidence that Route 53 can answer the record test using the hosted-zone configuration.
+
+**What it does not prove on its own:** The Route 53 hosted-zone test does not independently confirm that the domain registrar delegates public DNS to this hosted zone, that all public resolvers can resolve the hostname, or that the application is reachable through the browser.
+
+### 26. Verify public DNS and application reachability separately
+
+1. Confirm that the domain registrar's nameservers match the four NS values in the Route 53 hosted zone.
+2. From a terminal, run `dig mymanara.cloudfolio.online A` or `nslookup mymanara.cloudfolio.online` and confirm the public DNS lookup returns answers.
+3. Open `http://mymanara.cloudfolio.online` in a browser (or use `https://` after configuring a valid certificate and HTTPS listener).
+4. If public DNS does not resolve, recheck registrar delegation, the hostname, and DNS propagation. If DNS resolves but the application does not load, check ALB listener rules, security groups, and target-group health.
 
 **HTTPS note:** An A Alias record only routes DNS traffic; it does not enable HTTPS by itself. To serve HTTPS on the custom domain, request or import an ACM certificate for the exact hostname in **US East (N. Virginia), `us-east-1`, when using an ALB in that Region**. Validate the certificate, add an HTTPS (443) listener to the ALB using that certificate, and ensure the ALB security group allows inbound TCP 443. Keep an HTTP (80) listener only if you want to redirect HTTP requests to HTTPS.
 
