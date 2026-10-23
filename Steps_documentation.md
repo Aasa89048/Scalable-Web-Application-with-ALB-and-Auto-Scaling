@@ -120,27 +120,55 @@ I created SNS topics for project notifications and configured their connection t
 
 ![SNS topics](Screenshots/sns-topics.png)
 
-## Part 6: Keeping the S3 bucket private and connecting CloudFront
+## Part 6: CloudFormation and S3
 
-### 19. Create the private S3 bucket
+### 19. Deploy and verify the CloudFormation stack
 
-I created a private S3 bucket for static content and kept its objects from being publicly accessible.
+CloudFormation can create and manage the AWS resources defined in a template as a stack. In the AWS CloudFormation console, review the template and parameters, create the stack, and monitor the **Events** tab until the stack reaches `CREATE_COMPLETE` or `UPDATE_COMPLETE`. If a deployment fails, inspect the failed event and its status reason before retrying.
 
-![Private S3 bucket](Screenshots/private-s3.png)
+**Evidence note:** This repository currently does not contain a CloudFormation template or a CloudFormation stack-status screenshot. Add the actual template and screenshot of the successful stack status here to document the specific deployment; no successful deployment is claimed by this text alone.
 
-### 20. Configure Origin Access Control (OAC) for CloudFront
+### 20. Create and verify the S3 bucket
 
-I configured Origin Access Control for the CloudFront S3 origin so CloudFront could access bucket objects without making the bucket public.
+I created an S3 bucket for the project's static content. The bucket screenshot records the bucket setup.
+
+![S3 bucket](Screenshots/s3bucket.png)
+
+The repository also includes a screenshot of a private S3 bucket, which documents the private-bucket configuration.
+
+![Private S3 bucket](Screenshots/s3raminaprivate.png)
+
+### 21. Understand and troubleshoot S3 Access Denied
+
+An **Access Denied** response means the request did not have the required permission, or an applicable policy or access-control setting denied it. For a private S3 origin behind CloudFront, check that the CloudFront distribution uses the intended Origin Access Control (OAC), that the bucket policy allows the correct CloudFront distribution to perform `s3:GetObject`, and that S3 Block Public Access remains enabled when public bucket access is not intended. Also confirm the object key exists and that the distribution's default root object is configured if the site is expected to open at the root URL.
+
+![S3 and CloudFront access-control settings](Screenshots/control-setting-for-s3andcloudfront.png)
+
+**Evidence note:** The current repository tree does not contain a screenshot explicitly named for an S3 Access Denied error. Add that screenshot when available so the issue and its resolution can be demonstrated directly.
+
+### 22. Configure CloudFront Origin Access Control
+
+I configured Origin Access Control (OAC) for the CloudFront S3 origin so CloudFront could access bucket objects without making the bucket public.
 
 ![S3 and CloudFront origin access control settings](Screenshots/control-setting-for-s3andcloudfront.png)
 
+### 23. Verify CloudFront is working
+
+I used the CloudFront working screenshot as evidence that the distribution was responding as expected.
+
+![CloudFront working](Screenshots/cloudfrontisworking.png)
+
+The distribution configuration is also recorded in the following screenshot.
+
+![CloudFront distribution with OAC to S3](Screenshots/cloudfrontdistributionwithoactos3.png)
+
 ## Part 7: Connecting the custom domain with Route 53
 
-### 21. Create a public hosted zone in Route 53
+### 24. Create a public hosted zone in Route 53
 
 ![Route 53 hosted zone and DNS records](Screenshots/route53-hostedzone.png)
 
-### 24. Verify the Route 53 hosted-zone record
+### 25. Verify the Route 53 hosted-zone record
 
 ![A record in the Route 53 hosted zone](Screenshots/recordinroute53hostedzone.png)
 
