@@ -31,135 +31,65 @@ The solution diagram was created using Lucidchart.
 
 ![Solution architecture](Screenshots/lucid-project-diagram.png)
 
-## Troubleshooting and Operational Problem-Solving
+## Troubleshooting
 
-Cloud engineering is not only about deploying resources. It requires isolating failures, checking evidence, making controlled changes, and verifying recovery. This section distinguishes **an issue encountered during this project** from **runbook scenarios that demonstrate a production troubleshooting approach**. Unverified fixes are not presented as completed work.
+While working on this project, I ran into a few things that helped me practice checking the actual cause instead of just changing settings and hoping they work.
 
-### 1. CloudFront distribution creation blocked by AWS account verification
+- **CloudFront distribution creation was blocked by an AWS account verification requirement.**
+  1. Checked the console error and treated it as an account-level issue rather than assuming my distribution settings were wrong.
+  2. Opened an AWS Support case on 20 October 2026 and waited for clarification.
+  3. The final resolution is not documented yet, so I have not marked this issue as fixed.
 
-**Status:** Encountered; AWS Support case submitted; final resolution not evidenced.
+  [CloudFront/OAC settings](Screenshots/cloudfrontdistributionwithoactos3.png)
 
-**Symptom:** Creating a CloudFront distribution was blocked by an account-verification requirement, despite the intended design using a private S3 origin and Origin Access Control.
+- **S3 or CloudFront shows “Access Denied” (403).** This is a troubleshooting checklist, not a confirmed fixed incident.
+  1. Check whether the error comes from direct S3 access or the CloudFront URL. A private bucket should not be publicly accessible.
+  2. Check the object name, CloudFront origin, OAC, and bucket policy for the intended distribution.
+  3. Test the CloudFront URL again after any change. If the object uses SSE-KMS, check the KMS permissions too.
 
-**Investigation and response:**
-1. Distinguished a possible account-level restriction from a distribution configuration error instead of repeatedly changing origin settings without evidence.
-2. Reviewed the console error and identified that the blocker required account/support review.
-3. Opened an AWS Support case titled **“Account verification required to create CloudFront distribution”** on 20 October 2026.
-4. Kept the incident unresolved until AWS confirmed the restriction was cleared and the distribution could be created and tested.
+  [Private S3 bucket](Screenshots/s3raminaprivate.png) · [OAC settings](Screenshots/control-setting-for-s3andcloudfront.png) · [CloudFront working](Screenshots/cloudfrontisworking.png)
 
-**Operational lesson:** Determine whether a failure is caused by resource configuration, IAM authorization, quotas, or account-level controls. Escalate account-level restrictions through the supported channel and track the final outcome.
+- **ALB target is unhealthy or the application returns 5xx errors.** General troubleshooting steps:
+  1. Check the target group's health status and reason.
+  2. Make sure the app is running on the expected port and health-check path.
+  3. Check security groups allow traffic from the ALB to the instance, then test the app through the ALB again.
 
-**Evidence:** [CloudFront distribution/OAC screenshot](Screenshots/cloudfrontdistributionwithoactos3.png) · [S3/CloudFront access-control settings](Screenshots/control-setting-for-s3andcloudfront.png)
+  [ALB](Screenshots/ALB.png) · [Security groups](Screenshots/Security-groups.png) · [App through ALB](Screenshots/php-app-lb-working%282%29.png)
 
-> The support case is a confirmed troubleshooting action. The available evidence does not establish that the account restriction was resolved.
+- **Auto Scaling does not add instances during a load test.** I tested scaling, but the exact cause of the behavior was not confirmed.
+  1. Check the ASG Activity history for launch errors.
+  2. Confirm the policy uses the metric being tested and allow enough time for its evaluation period.
+  3. Check capacity limits, subnet IPs, and Launch Template settings, then run the test again and compare the instance count.
 
-### 2. S3 or CloudFront returns Access Denied (403)
+  [Auto Scaling group](Screenshots/ASG.png) · [Launch Template](Screenshots/php-app-LT.png)
 
-**Status:** Diagnostic runbook; no dedicated Access Denied screenshot or confirmed resolution is currently present in the repository.
+- **A CloudFormation stack fails to create or update.** This is a runbook example; the repository does not yet include a CloudFormation template or successful stack screenshot.
+  1. Open stack Events and find the first failed resource and its reason.
+  2. Check template values, resource dependencies, permissions, and region.
+  3. Deploy again and confirm both the stack status and that the resources work.
 
-**Potential causes:** Missing object or case-sensitive key, incorrect S3 origin, bucket policy that does not authorize the intended CloudFront distribution, OAC mismatch, or missing IAM/KMS permissions.
+- **An instance in a private subnet cannot reach the internet.**
+  1. Check the subnet route table points to the right NAT gateway.
+  2. Confirm the NAT gateway is in a public subnet with a route to an Internet Gateway.
+  3. Check security groups and network ACLs if the connection still fails.
 
-**Troubleshooting sequence:**
-1. Identify whether the 403 occurs on a direct S3 URL or a CloudFront URL. A private bucket refusing direct public access can be expected.
-2. Confirm that the requested object exists and the key/capitalization is correct.
-3. Confirm CloudFront points to the intended S3 origin and OAC is enabled for that origin.
-4. Review the bucket policy for least-privilege s3:GetObject access from the intended CloudFront distribution. Keep S3 Block Public Access enabled when public access is not required.
-5. If objects use SSE-KMS, verify the KMS key policy and relevant permissions.
-6. Check the default root object, such as index.html, when the distribution root URL should open a page.
-7. Re-test through CloudFront and record the error and successful result.
+  [VPC](Screenshots/Productionvpc.png) · [NAT gateways](Screenshots/two-natgtws-one-in-each-az.png) · [Private route](Screenshots/route-to-natgtw-from-php-app-private-subnet.png)
 
-**Evidence:** [S3 bucket](Screenshots/s3bucket.png) · [Private S3 bucket](Screenshots/s3raminaprivate.png) · [OAC settings](Screenshots/control-setting-for-s3andcloudfront.png) · [CloudFront working screenshot](Screenshots/cloudfrontisworking.png)
+- **Route 53 domain does not reach the application.**
+  1. Check the alias record points to the intended ALB.
+  2. Test the ALB directly to see whether the problem is DNS or the application.
+  3. Allow for DNS caching and verify the record again.
 
-### 3. ALB target health checks fail or the application returns 5xx errors
+  [Route 53 record](Screenshots/recordinroute53hostedzone.png) · [Alias record working](Screenshots/proofroute53aliasrecordworks.png)
 
-**Status:** Production-style runbook; no specific failed-health-check incident is claimed.
+- **CloudWatch alarm does not send a notification.**
+  1. Check the alarm metric, threshold, and action.
+  2. Make sure the SNS topic is correct and the email subscription is confirmed.
+  3. Run a safe test and verify the notification actually arrives.
 
-**Troubleshooting sequence:**
-1. Open the target group and inspect each target's health status and reason code.
-2. Verify the application service is running and listening on the configured target and health-check port.
-3. Check whether the health-check path returns the configured success code; change the path or matcher only if it matches the intended application behavior.
-4. Verify the ALB security group permits client traffic and the instance security group permits the target port from the ALB security group.
-5. Review application/web-server logs and compare ALB metrics, including target 5xx responses and request counts.
-6. Re-test target health and the application through the ALB endpoint after a correction.
+  [CloudWatch alarms](Screenshots/cloudwatch-alarms.png) · [SNS topics](Screenshots/sns-topics.png)
 
-**Evidence of the architecture:** [ALB configuration](Screenshots/ALB.png) · [Security groups](Screenshots/Security-groups.png) · [Application through the ALB](Screenshots/php-app-lb-working%282%29.png)
-
-### 4. Auto Scaling does not launch additional instances during a load test
-
-**Status:** Scaling behavior was tested; the cause of the observed lack of scaling activity was not conclusively established in the available evidence.
-
-**Troubleshooting sequence:**
-1. Inspect the ASG Activity history for launch failures, cooldowns, or capacity constraints.
-2. Confirm the scaling policy is attached to the correct ASG and uses the intended metric, threshold, and evaluation period.
-3. Check the metric used by the policy in CloudWatch. A CPU stress test will not trigger a policy based on another metric, and a short test may not satisfy the evaluation window.
-4. Verify minimum, desired, and maximum capacity, subnet IP availability, instance quotas, and Launch Template/AMI permissions.
-5. Review EC2 launch failures and instance status checks; confirm new instances register with the target group and pass health checks.
-6. Repeat a controlled test and save the metric, ASG activity event, and before/after instance counts.
-
-**Evidence:** [Auto Scaling group](Screenshots/ASG.png) · [Launch Template](Screenshots/php-app-LT.png) · [CloudWatch alarms](Screenshots/cloudwatch-alarms.png)
-
-### 5. CloudFormation stack creation or update fails
-
-**Status:** Runbook guidance; no CloudFormation template or successful stack screenshot is currently present in the repository.
-
-**Troubleshooting sequence:**
-1. Open the stack Events and identify the first failed resource event and its status reason; later failures may be consequences of the initial error.
-2. Validate the template, parameters, resource names, references, and dependencies. Confirm resource IDs belong to the intended VPC and region.
-3. Check IAM permissions for CloudFormation and underlying services, service quotas, and resource-specific constraints.
-4. If rollback fails, identify the resource preventing rollback and reconcile out-of-band changes before continuing. Avoid deleting resources blindly.
-5. Redeploy after the correction, confirm the final stack status, and test the resources themselves.
-
-**Evidence gap:** Add the actual template and a CloudFormation Events/stack-status screenshot after verifying the deployment. A successful stack status alone does not prove end-to-end application health.
-
-### 6. Private subnet instances cannot reach required external services
-
-**Status:** Runbook guidance based on the project's private-subnet and NAT architecture.
-
-**Troubleshooting sequence:**
-1. Identify the destination and port, then test DNS resolution and connectivity from the instance.
-2. Inspect the subnet's route table and verify the default route points to the correct NAT gateway.
-3. Verify the NAT gateway is available in a public subnet whose route table has a route to an Internet Gateway.
-4. Check security-group egress, network ACL inbound/outbound rules, DNS settings, and destination availability.
-5. Use VPC Flow Logs, if enabled, to help distinguish rejected traffic from routing or application failures.
-
-**Evidence:** [VPC layout](Screenshots/Productionvpc.png) · [Two NAT gateways](Screenshots/two-natgtws-one-in-each-az.png) · [Private-subnet route](Screenshots/route-to-natgtw-from-php-app-private-subnet.png)
-
-### 7. Route 53 alias resolves incorrectly or the application is unreachable through the domain
-
-**Status:** Alias-record working evidence exists; a DNS failure incident is not claimed.
-
-**Troubleshooting sequence:**
-1. Verify the record name, record type, alias target, and hosted zone.
-2. Confirm the alias targets the intended load balancer and the ALB is active with healthy targets.
-3. Use DNS lookup tools to verify the record resolves, accounting for TTL and resolver caching.
-4. Test the ALB endpoint separately from the domain. If the ALB works but the domain does not, focus on DNS; if both fail, investigate the application/ALB path.
-5. Save the record configuration and successful domain/application test as evidence.
-
-**Evidence:** [Route 53 hosted zone](Screenshots/route53-hostedzone.png) · [Hosted-zone record](Screenshots/recordinroute53hostedzone.png) · [Alias record working](Screenshots/proofroute53aliasrecordworks.png)
-
-### 8. Monitoring alarm does not notify the operator
-
-**Status:** CloudWatch alarms and SNS topics are documented; end-to-end delivery is not proven by the available screenshots.
-
-**Troubleshooting sequence:**
-1. Check the alarm state, metric namespace/dimensions, threshold, statistic, and evaluation periods.
-2. Confirm the alarm action references the intended SNS topic and the topic subscription is confirmed.
-3. Check SNS delivery status and the destination's spam/quarantine or access restrictions.
-4. Trigger a safe controlled test where possible, then verify the path from metric to alarm to SNS notification.
-5. Record the alarm transition and notification receipt; a visible alarm alone does not prove delivery.
-
-**Evidence:** [CloudWatch alarms](Screenshots/cloudwatch-alarms.png) · [SNS topics](Screenshots/sns-topics.png)
-
-### Troubleshooting method
-
-Across these scenarios, the repeatable operations workflow is:
-
-1. **Observe:** Capture the exact error, timestamp, affected resource, and impact.
-2. **Scope:** Determine whether the issue is application-, network-, IAM-, service-, quota-, or account-level.
-3. **Inspect evidence:** Use resource status/reason codes, CloudWatch metrics and logs, configuration, and AWS service events.
-4. **Change safely:** Make the smallest reversible change that addresses the suspected cause; avoid broad permissions or exposing private resources as a shortcut.
-5. **Verify:** Re-test the original failure path and confirm downstream health, not just a green resource status.
-6. **Document:** Record root cause, action, validation, and remaining risk; add sanitized screenshots/logs without credentials or sensitive identifiers.
+These examples reflect how I approach troubleshooting: check the error and logs, narrow down the likely cause, make one careful change at a time, and test again. Where I have not confirmed a fix, I have left that clear rather than claiming it worked.
 
 ## Implementation status
 
