@@ -21,7 +21,6 @@ This project implements a scalable web application on AWS using an Application L
 - Prepared a custom AMI and Launch Template for application instances
 - Worked with WAF, private S3 access, CloudFront OAC, CloudWatch alarms, and SNS topics
 - Used Systems Manager Session Manager for instance administration
-- Investigated an AWS account-level restriction blocking CloudFront distribution creation and opened an AWS Support case
 
 ## Solution architecture
 
@@ -31,35 +30,35 @@ The solution diagram was created using Lucidchart.
 
 ![Solution architecture](Screenshots/lucid-project-diagram.png)
 
-## Troubleshooting
+## Troubleshooting Scenarios
 
-A few issues and checks from working on this project:
+These are common issues a cloud engineer may need to investigate in an AWS environment. They are included as practical runbook examples, not claims that every issue happened in this project.
 
-- **CloudFront distribution creation was blocked by an AWS account verification requirement.** *(Issue encountered; resolution not confirmed.)*
-  1. Checked the console error to determine that it was an account-level restriction, not necessarily a configuration problem.
-  2. Opened an AWS Support case on 20 October 2026 and am awaiting documented confirmation of the outcome.
-
-  [CloudFront/OAC settings](Screenshots/cloudfrontdistributionwithoactos3.png)
-
-- **Auto Scaling did not add instances as expected during a load test.** *(Tested; exact cause not confirmed.)*
-  1. Check the ASG Activity history for launch errors and confirm the scaling policy uses the metric being tested.
-  2. Check evaluation time, capacity limits, subnet IP availability, and Launch Template settings, then repeat the test.
+- **Auto Scaling does not add instances during a load test.**
+  1. Check the ASG Activity history for launch errors and confirm the policy uses the metric being tested.
+  2. Check the evaluation period, capacity limits, subnet IP availability, and Launch Template settings, then test again.
 
   [Auto Scaling group](Screenshots/ASG.png) · [Launch Template](Screenshots/php-app-LT.png)
 
-- **S3/CloudFront returns “Access Denied” (403).** *(Troubleshooting checklist; no confirmed incident resolution documented.)*
-  1. Check whether direct S3 access is being denied as expected for a private bucket, and confirm the object key and CloudFront origin.
-  2. Verify OAC and the bucket policy allow the intended CloudFront distribution to read objects; test the CloudFront URL again.
+- **S3/CloudFront returns “Access Denied” (403).**
+  1. Check the object key and origin, then confirm whether direct S3 access is expected to be blocked because the bucket is private.
+  2. Verify OAC and the bucket policy allow the intended CloudFront distribution to read objects, then test the CloudFront URL again.
 
   [Private S3 bucket](Screenshots/s3raminaprivate.png) · [OAC settings](Screenshots/control-setting-for-s3andcloudfront.png) · [CloudFront working](Screenshots/cloudfrontisworking.png)
 
-- **ALB target is unhealthy or the app returns 5xx errors.** *(General troubleshooting example.)*
+- **ALB targets are unhealthy or the app returns 5xx errors.**
   1. Check the target group's health status and reason, and make sure the app is running on the expected port and health-check path.
-  2. Verify the instance security group allows traffic from the ALB security group, then test the application through the ALB again.
+  2. Verify the instance security group allows traffic from the ALB security group, review application logs, and test through the ALB again.
 
   [ALB](Screenshots/ALB.png) · [Security groups](Screenshots/Security-groups.png) · [App through ALB](Screenshots/php-app-lb-working%282%29.png)
 
-My approach is to check the error first, narrow down the likely cause, make a small change, and test again. I only mark an issue as fixed when I have evidence that it is working.
+- **An instance in a private subnet cannot reach an external service.**
+  1. Check that the subnet route table points to the correct NAT gateway and that the NAT gateway's public subnet has a route to the Internet Gateway.
+  2. If it still fails, check security-group egress, network ACLs, and DNS resolution.
+
+  [VPC](Screenshots/Productionvpc.png) · [NAT gateways](Screenshots/two-natgtws-one-in-each-az.png) · [Private route](Screenshots/route-to-natgtw-from-php-app-private-subnet.png)
+
+My approach would be to check the error and resource status first, narrow down the likely cause, make one careful change at a time, and verify the result.
 
 ## Implementation status
 
