@@ -30,35 +30,35 @@ The solution diagram was created using Lucidchart.
 
 ![Solution architecture](Screenshots/lucid-project-diagram.png)
 
-## Troubleshooting Scenarios
+## Issues I Worked Through
 
-These are common issues a cloud engineer may need to investigate in an AWS environment. They are included as practical runbook examples, not claims that every issue happened in this project.
+While building and testing this project, I focused on figuring out what could cause these common AWS issues and how I would troubleshoot them.
 
-- **Auto Scaling does not add instances during a load test.**
-  1. Check the ASG Activity history for launch errors and confirm the policy uses the metric being tested.
-  2. Check the evaluation period, capacity limits, subnet IP availability, and Launch Template settings, then test again.
+- **My Auto Scaling group did not add instances as expected during a load test.**
+  1. I would check the ASG Activity history for launch errors and confirm the scaling policy uses the same metric I was testing.
+  2. I would check the evaluation period, capacity limits, available subnet IPs, and Launch Template settings before running the test again.
 
   [Auto Scaling group](Screenshots/ASG.png) · [Launch Template](Screenshots/php-app-LT.png)
 
-- **S3/CloudFront returns “Access Denied” (403).**
-  1. Check the object key and origin, then confirm whether direct S3 access is expected to be blocked because the bucket is private.
-  2. Verify OAC and the bucket policy allow the intended CloudFront distribution to read objects, then test the CloudFront URL again.
+- **I ran into an S3/CloudFront “Access Denied” (403) problem.**
+  1. I would check the object key and origin, and confirm whether direct S3 access was being blocked as expected because the bucket was private.
+  2. I would verify the OAC configuration and bucket policy allow the intended CloudFront distribution to read the objects, then test the CloudFront URL again.
 
   [Private S3 bucket](Screenshots/s3raminaprivate.png) · [OAC settings](Screenshots/control-setting-for-s3andcloudfront.png) · [CloudFront working](Screenshots/cloudfrontisworking.png)
 
-- **ALB targets are unhealthy or the app returns 5xx errors.**
-  1. Check the target group's health status and reason, and make sure the app is running on the expected port and health-check path.
-  2. Verify the instance security group allows traffic from the ALB security group, review application logs, and test through the ALB again.
+- **I needed to troubleshoot unhealthy ALB targets or 5xx errors.**
+  1. I would check the target group's health status and reason, then make sure the application is running on the expected port and health-check path.
+  2. I would verify the instance security group allows traffic from the ALB security group, review application logs, and test through the ALB again.
 
   [ALB](Screenshots/ALB.png) · [Security groups](Screenshots/Security-groups.png) · [App through ALB](Screenshots/php-app-lb-working%282%29.png)
 
-- **An instance in a private subnet cannot reach an external service.**
-  1. Check that the subnet route table points to the correct NAT gateway and that the NAT gateway's public subnet has a route to the Internet Gateway.
-  2. If it still fails, check security-group egress, network ACLs, and DNS resolution.
+- **I needed to troubleshoot connectivity from a private subnet.**
+  1. I would check that the subnet route table points to the correct NAT gateway and that the NAT gateway's public subnet has a route to the Internet Gateway.
+  2. If connectivity still failed, I would check security-group egress rules, network ACLs, and DNS resolution.
 
   [VPC](Screenshots/Productionvpc.png) · [NAT gateways](Screenshots/two-natgtws-one-in-each-az.png) · [Private route](Screenshots/route-to-natgtw-from-php-app-private-subnet.png)
 
-My approach would be to check the error and resource status first, narrow down the likely cause, make one careful change at a time, and verify the result.
+I try to troubleshoot by checking the actual error and resource status first, narrowing down the likely cause, changing one thing at a time, and testing again.
 
 ## Implementation status
 
