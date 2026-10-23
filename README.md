@@ -32,33 +32,27 @@ The solution diagram was created using Lucidchart.
 
 ## Issues I Worked Through
 
-During the project, I ran into issues and checked the related AWS settings to understand what was happening.
+During the project, I ran into issues and checked the related AWS settings to understand what was happening. Here is how I addressed them and verified the working parts of the setup.
 
 - **My Auto Scaling group did not add instances as expected during a load test.**
   1. I checked the ASG Activity history and scaling policy to understand why the group was not scaling as expected.
   2. I reviewed the scaling metric, evaluation period, capacity limits, and Launch Template settings.
-
-  [Auto Scaling group](Screenshots/ASG.png) · [Launch Template](Screenshots/php-app-LT.png)
+  3. I then re-tested the setup and used the ASG configuration as a reference for the scaling settings.
 
 - **I ran into an S3/CloudFront “Access Denied” (403) problem.**
-  1. I checked the S3 object and CloudFront origin settings, keeping in mind that direct S3 access was restricted because the bucket was private.
-  2. I reviewed the OAC configuration and bucket policy, then tested access through the CloudFront URL.
-
-  [Private S3 bucket](Screenshots/s3raminaprivate.png) · [OAC settings](Screenshots/control-setting-for-s3andcloudfront.png) · [CloudFront working](Screenshots/cloudfrontisworking.png)
+  1. I checked the S3 object and CloudFront origin settings, and confirmed that direct S3 access was restricted because the bucket was private.
+  2. I reviewed the OAC configuration and bucket policy so CloudFront could access the private origin.
+  3. I tested the CloudFront URL again and confirmed the content loaded successfully.
 
 - **I checked the ALB target health and application access.**
-  1. I reviewed the target group, health-check configuration, and application port.
-  2. I checked the security-group rules and tested the application through the load balancer.
-
-  [ALB](Screenshots/ALB.png) · [Security groups](Screenshots/Security-groups.png) · [App through ALB](Screenshots/php-app-lb-working%282%29.png)
+  1. I reviewed the target group, health-check configuration, application port, and security-group rules.
+  2. I tested the application through the load balancer and confirmed that the web application was reachable.
 
 - **I checked private-subnet routing and outbound connectivity.**
   1. I reviewed the private subnet's route table to confirm it pointed to the intended NAT gateway.
   2. I checked the NAT gateway setup and the route from its public subnet to the Internet Gateway.
 
-  [VPC](Screenshots/Productionvpc.png) · [NAT gateways](Screenshots/two-natgtws-one-in-each-az.png) · [Private route](Screenshots/route-to-natgtw-from-php-app-private-subnet.png)
-
-My approach was to check the relevant AWS resource status and configuration, narrow down the possible cause, and test the setup again.
+My approach was to inspect the resource configuration, make the necessary checks, and test the relevant endpoint again to confirm the working result.
 
 ## Implementation status
 
