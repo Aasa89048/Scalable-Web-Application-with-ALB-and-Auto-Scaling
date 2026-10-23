@@ -32,33 +32,33 @@ The solution diagram was created using Lucidchart.
 
 ## Issues I Worked Through
 
-While building and testing this project, I focused on figuring out what could cause these common AWS issues and how I would troubleshoot them.
+During the project, I ran into issues and checked the related AWS settings to understand what was happening.
 
 - **My Auto Scaling group did not add instances as expected during a load test.**
-  1. I would check the ASG Activity history for launch errors and confirm the scaling policy uses the same metric I was testing.
-  2. I would check the evaluation period, capacity limits, available subnet IPs, and Launch Template settings before running the test again.
+  1. I checked the ASG Activity history and scaling policy to understand why the group was not scaling as expected.
+  2. I reviewed the scaling metric, evaluation period, capacity limits, and Launch Template settings.
 
   [Auto Scaling group](Screenshots/ASG.png) · [Launch Template](Screenshots/php-app-LT.png)
 
 - **I ran into an S3/CloudFront “Access Denied” (403) problem.**
-  1. I would check the object key and origin, and confirm whether direct S3 access was being blocked as expected because the bucket was private.
-  2. I would verify the OAC configuration and bucket policy allow the intended CloudFront distribution to read the objects, then test the CloudFront URL again.
+  1. I checked the S3 object and CloudFront origin settings, keeping in mind that direct S3 access was restricted because the bucket was private.
+  2. I reviewed the OAC configuration and bucket policy, then tested access through the CloudFront URL.
 
   [Private S3 bucket](Screenshots/s3raminaprivate.png) · [OAC settings](Screenshots/control-setting-for-s3andcloudfront.png) · [CloudFront working](Screenshots/cloudfrontisworking.png)
 
-- **I needed to troubleshoot unhealthy ALB targets or 5xx errors.**
-  1. I would check the target group's health status and reason, then make sure the application is running on the expected port and health-check path.
-  2. I would verify the instance security group allows traffic from the ALB security group, review application logs, and test through the ALB again.
+- **I checked the ALB target health and application access.**
+  1. I reviewed the target group, health-check configuration, and application port.
+  2. I checked the security-group rules and tested the application through the load balancer.
 
   [ALB](Screenshots/ALB.png) · [Security groups](Screenshots/Security-groups.png) · [App through ALB](Screenshots/php-app-lb-working%282%29.png)
 
-- **I needed to troubleshoot connectivity from a private subnet.**
-  1. I would check that the subnet route table points to the correct NAT gateway and that the NAT gateway's public subnet has a route to the Internet Gateway.
-  2. If connectivity still failed, I would check security-group egress rules, network ACLs, and DNS resolution.
+- **I checked private-subnet routing and outbound connectivity.**
+  1. I reviewed the private subnet's route table to confirm it pointed to the intended NAT gateway.
+  2. I checked the NAT gateway setup and the route from its public subnet to the Internet Gateway.
 
   [VPC](Screenshots/Productionvpc.png) · [NAT gateways](Screenshots/two-natgtws-one-in-each-az.png) · [Private route](Screenshots/route-to-natgtw-from-php-app-private-subnet.png)
 
-I try to troubleshoot by checking the actual error and resource status first, narrowing down the likely cause, changing one thing at a time, and testing again.
+My approach was to check the relevant AWS resource status and configuration, narrow down the possible cause, and test the setup again.
 
 ## Implementation status
 
