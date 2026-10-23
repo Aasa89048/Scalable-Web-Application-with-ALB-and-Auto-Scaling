@@ -33,63 +33,33 @@ The solution diagram was created using Lucidchart.
 
 ## Troubleshooting
 
-While working on this project, I ran into a few things that helped me practice checking the actual cause instead of just changing settings and hoping they work.
+A few issues and checks from working on this project:
 
-- **CloudFront distribution creation was blocked by an AWS account verification requirement.**
-  1. Checked the console error and treated it as an account-level issue rather than assuming my distribution settings were wrong.
-  2. Opened an AWS Support case on 20 October 2026 and waited for clarification.
-  3. The final resolution is not documented yet, so I have not marked this issue as fixed.
+- **CloudFront distribution creation was blocked by an AWS account verification requirement.** *(Issue encountered; resolution not confirmed.)*
+  1. Checked the console error to determine that it was an account-level restriction, not necessarily a configuration problem.
+  2. Opened an AWS Support case on 20 October 2026 and am awaiting documented confirmation of the outcome.
 
   [CloudFront/OAC settings](Screenshots/cloudfrontdistributionwithoactos3.png)
 
-- **S3 or CloudFront shows “Access Denied” (403).** This is a troubleshooting checklist, not a confirmed fixed incident.
-  1. Check whether the error comes from direct S3 access or the CloudFront URL. A private bucket should not be publicly accessible.
-  2. Check the object name, CloudFront origin, OAC, and bucket policy for the intended distribution.
-  3. Test the CloudFront URL again after any change. If the object uses SSE-KMS, check the KMS permissions too.
-
-  [Private S3 bucket](Screenshots/s3raminaprivate.png) · [OAC settings](Screenshots/control-setting-for-s3andcloudfront.png) · [CloudFront working](Screenshots/cloudfrontisworking.png)
-
-- **ALB target is unhealthy or the application returns 5xx errors.** General troubleshooting steps:
-  1. Check the target group's health status and reason.
-  2. Make sure the app is running on the expected port and health-check path.
-  3. Check security groups allow traffic from the ALB to the instance, then test the app through the ALB again.
-
-  [ALB](Screenshots/ALB.png) · [Security groups](Screenshots/Security-groups.png) · [App through ALB](Screenshots/php-app-lb-working%282%29.png)
-
-- **Auto Scaling does not add instances during a load test.** I tested scaling, but the exact cause of the behavior was not confirmed.
-  1. Check the ASG Activity history for launch errors.
-  2. Confirm the policy uses the metric being tested and allow enough time for its evaluation period.
-  3. Check capacity limits, subnet IPs, and Launch Template settings, then run the test again and compare the instance count.
+- **Auto Scaling did not add instances as expected during a load test.** *(Tested; exact cause not confirmed.)*
+  1. Check the ASG Activity history for launch errors and confirm the scaling policy uses the metric being tested.
+  2. Check evaluation time, capacity limits, subnet IP availability, and Launch Template settings, then repeat the test.
 
   [Auto Scaling group](Screenshots/ASG.png) · [Launch Template](Screenshots/php-app-LT.png)
 
-- **A CloudFormation stack fails to create or update.** This is a runbook example; the repository does not yet include a CloudFormation template or successful stack screenshot.
-  1. Open stack Events and find the first failed resource and its reason.
-  2. Check template values, resource dependencies, permissions, and region.
-  3. Deploy again and confirm both the stack status and that the resources work.
+- **S3/CloudFront returns “Access Denied” (403).** *(Troubleshooting checklist; no confirmed incident resolution documented.)*
+  1. Check whether direct S3 access is being denied as expected for a private bucket, and confirm the object key and CloudFront origin.
+  2. Verify OAC and the bucket policy allow the intended CloudFront distribution to read objects; test the CloudFront URL again.
 
-- **An instance in a private subnet cannot reach the internet.**
-  1. Check the subnet route table points to the right NAT gateway.
-  2. Confirm the NAT gateway is in a public subnet with a route to an Internet Gateway.
-  3. Check security groups and network ACLs if the connection still fails.
+  [Private S3 bucket](Screenshots/s3raminaprivate.png) · [OAC settings](Screenshots/control-setting-for-s3andcloudfront.png) · [CloudFront working](Screenshots/cloudfrontisworking.png)
 
-  [VPC](Screenshots/Productionvpc.png) · [NAT gateways](Screenshots/two-natgtws-one-in-each-az.png) · [Private route](Screenshots/route-to-natgtw-from-php-app-private-subnet.png)
+- **ALB target is unhealthy or the app returns 5xx errors.** *(General troubleshooting example.)*
+  1. Check the target group's health status and reason, and make sure the app is running on the expected port and health-check path.
+  2. Verify the instance security group allows traffic from the ALB security group, then test the application through the ALB again.
 
-- **Route 53 domain does not reach the application.**
-  1. Check the alias record points to the intended ALB.
-  2. Test the ALB directly to see whether the problem is DNS or the application.
-  3. Allow for DNS caching and verify the record again.
+  [ALB](Screenshots/ALB.png) · [Security groups](Screenshots/Security-groups.png) · [App through ALB](Screenshots/php-app-lb-working%282%29.png)
 
-  [Route 53 record](Screenshots/recordinroute53hostedzone.png) · [Alias record working](Screenshots/proofroute53aliasrecordworks.png)
-
-- **CloudWatch alarm does not send a notification.**
-  1. Check the alarm metric, threshold, and action.
-  2. Make sure the SNS topic is correct and the email subscription is confirmed.
-  3. Run a safe test and verify the notification actually arrives.
-
-  [CloudWatch alarms](Screenshots/cloudwatch-alarms.png) · [SNS topics](Screenshots/sns-topics.png)
-
-These examples reflect how I approach troubleshooting: check the error and logs, narrow down the likely cause, make one careful change at a time, and test again. Where I have not confirmed a fix, I have left that clear rather than claiming it worked.
+My approach is to check the error first, narrow down the likely cause, make a small change, and test again. I only mark an issue as fixed when I have evidence that it is working.
 
 ## Implementation status
 
